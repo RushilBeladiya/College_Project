@@ -1,9 +1,9 @@
 import 'package:college_project/controller/Faculty/home/faculty_home_controller.dart';
 import 'package:college_project/controller/main/syllabus_controller.dart';
-import 'package:college_project/views/screens/administrator_screens/staff_list_screen.dart';
 import 'package:college_project/views/screens/auth_screen/student_auth_screen/student_registration_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/announcement_screen/add_announcement_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/attendance_screen/faculty_attendance_main_screen.dart';
+import 'package:college_project/views/screens/faculty_screens/eventscreen/facultyeventscreen.dart';
 import 'package:college_project/views/screens/faculty_screens/faculty_stafflist_screen/faculty_staff_list_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/home/faculty_lectures_view_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/payment_screens/faculty_payment_screen.dart';
@@ -14,12 +14,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
+
 import '../../../../controller/Auth/auth_controller.dart';
 import '../../../../controller/Auth/dateTimeController.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/images.dart';
-import '../../student_screens/home/contact_us_screen.dart';
 import '../../student_screens/home/bottom_navigation_screen/profile_screen.dart';
+import '../../student_screens/home/contact_us_screen.dart';
 import '../../student_screens/setting_screen/settings_screen.dart';
 import '../../student_screens/setting_screen/webview_screen.dart';
 
@@ -35,8 +36,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
   final AuthController authController = Get.find();
   final FacultyHomeController facultyHomeController =
       Get.put(FacultyHomeController());
-  final SyllabusController syllabusController =
-  Get.put(SyllabusController());
+  final SyllabusController syllabusController = Get.put(SyllabusController());
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +165,9 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(height: 20.h,),
+                            SizedBox(
+                              height: 20.h,
+                            ),
                             Obx(
                               () => Text(
                                 "${facultyHomeController.facultyModel.value.firstName} ${facultyHomeController.facultyModel.value.lastName} ${facultyHomeController.facultyModel.value.surName}",
@@ -271,8 +273,8 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: (){
-                    Get.to(()=> PaymentStatusShowScreen());
+                  onTap: () {
+                    Get.to(() => PaymentStatusShowScreen());
                   },
                   child: buildDashboardItem(
                     title: "Fee payment",
@@ -280,8 +282,8 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: (){
-                    Get.to(()=> FacultyAnnouncementScreen());
+                  onTap: () {
+                    Get.to(() => FacultyAnnouncementScreen());
                   },
                   child: buildDashboardItem(
                     title: "Notice",
@@ -289,21 +291,26 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: (){
-                    Get.to(()=> FacultyStaffListScreen());
+                  onTap: () {
+                    Get.to(() => FacultyStaffListScreen());
                   },
                   child: buildDashboardItem(
                     title: "Staff Profile",
                     image: AppImage.staffProfile,
                   ),
                 ),
-                buildDashboardItem(
-                  title: "Event",
-                  image: AppImage.event,
+                GestureDetector(
+                  onTap: () {
+                    Get.to(() => FacultyEventScreen());
+                  },
+                  child: buildDashboardItem(
+                    title: "Event",
+                    image: AppImage.event,
+                  ),
                 ),
                 GestureDetector(
-                  onTap: (){
-                    Get.to(()=> GalleryScreen());
+                  onTap: () {
+                    Get.to(() => GalleryScreen());
                   },
                   child: buildDashboardItem(
                     title: "Gallery",

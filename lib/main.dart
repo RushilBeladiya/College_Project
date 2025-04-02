@@ -1,10 +1,11 @@
 import 'package:college_project/controller/Auth/auth_controller.dart';
+import 'package:college_project/controller/main/network_controller.dart';
 import 'package:college_project/core/utils/colors.dart';
 import 'package:college_project/core/utils/routes.dart';
 import 'package:college_project/views/screens/auth_screen/student_auth_screen/student_login_screen.dart';
-import 'package:college_project/views/screens/student_screens/home/home_screen.dart';
 import 'package:college_project/views/screens/auth_screen/student_auth_screen/student_registration_screen.dart';
 import 'package:college_project/views/screens/splash_screen/splash_screen.dart';
+import 'package:college_project/views/screens/student_screens/home/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -18,6 +19,7 @@ void main() async {
 
   await SharedPreferences.getInstance();
   await Firebase.initializeApp();
+  Get.put(NetworkController());
   Get.put(AuthController());
   Get.put(DateTimeController());
 
@@ -55,7 +57,8 @@ class _MyAppState extends State<MyApp> {
             GetPage(
                 name: Routes.registrationPage,
                 page: () => StudentRegistrationScreen()),
-            GetPage(name: Routes.loginPage, page: () => const StudentLoginScreen()),
+            GetPage(
+                name: Routes.loginPage, page: () => const StudentLoginScreen()),
             GetPage(name: Routes.homePage, page: () => HomeScreen()),
           ],
         );

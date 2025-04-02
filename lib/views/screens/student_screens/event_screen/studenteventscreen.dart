@@ -1,0 +1,45 @@
+import 'package:college_project/controller/main/event_Controller';
+import 'package:college_project/views/screens/student_screens/event_screen/studenteventdetailscreen.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../../../core/utils/colors.dart';
+
+class StudentEventScreen extends StatefulWidget {
+  const StudentEventScreen({super.key});
+
+  @override
+  State<StudentEventScreen> createState() => _StudentEventScreenState();
+}
+
+class _StudentEventScreenState extends State<StudentEventScreen> {
+  final EventController controller = Get.put(EventController());
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColor.appBackGroundColor,
+      appBar: AppBar(
+          title: Text('Student Events',
+              style: TextStyle(color: AppColor.primaryColor)),
+          backgroundColor: Colors.white),
+      body: Obx(() => ListView.builder(
+            itemCount: controller.events.length,
+            itemBuilder: (context, index) {
+              final event = controller.events[index];
+              return Card(
+                color: AppColor.primaryColor.withOpacity(0.1),
+                child: ListTile(
+                  title: Text(event['title'],
+                      style: TextStyle(color: AppColor.primaryColor)),
+                  subtitle: Text(event['description']),
+                  trailing: Text(event['dateTime']),
+                  onTap: () =>
+                      Get.to(() => StudentEventDetailScreen(event: event)),
+                ),
+              );
+            },
+          )),
+    );
+  }
+}

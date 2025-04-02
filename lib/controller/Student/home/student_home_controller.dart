@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../../../models/student_model.dart';
 import '../../../views/screens/student_screens/home/bottom_navigation_screen/dash_board_screen.dart';
 import '../../../views/screens/student_screens/setting_screen/settings_screen.dart';
@@ -16,15 +17,20 @@ class StudentHomeController extends GetxController {
   final FirebaseAuth authUser = FirebaseAuth.instance;
   final FirebaseStorage storage = FirebaseStorage.instance;
   final ImagePicker picker = ImagePicker();
-  var isLoading = false.obs;
+  var isLoading = true.obs;
 
   final DatabaseReference dbRef =
       FirebaseDatabase.instance.ref().child('student');
+
+  // final RxMap<String, List<Map<String, dynamic>>> subjectWiseAttendance =
+  //     RxMap<String, List<Map<String, dynamic>>>(); // Initialize as RxMap
 
   @override
   void onInit() {
     super.onInit();
     fetchCurrentUserData();
+    attandencerecods();
+    print("+-+-+---+---+-+-+-+");
   }
 
   final RxList bottomScreenList = [
@@ -122,6 +128,11 @@ class StudentHomeController extends GetxController {
     status: '',
   ).obs;
 
+  void attandencerecods() async {
+    await fetchAttendanceRecords();
+    calculateOverallAttendance();
+  }
+
   Future<void> fetchCurrentUserData() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
@@ -133,7 +144,7 @@ class StudentHomeController extends GetxController {
           if (data != null) {
             currentStudent.value = StudentModel.fromMap(data);
             print(
-                "User Loaded:----- ${currentStudent.value.firstName} ${currentStudent.value.lastName}");
+                "User Loaded:-----++++ ${currentStudent.value.firstName} ${currentStudent.value.lastName}");
           } else {
             print("Failed to parse user data.");
           }
@@ -147,4 +158,156 @@ class StudentHomeController extends GetxController {
       print("Error fetching user data: $e");
     }
   }
+
+  var total = 0.obs;
+  var present = 0.obs;
+  var absent = 0.obs;
+  var overallAttendancePercentage = 0.0.obs;
+  var subjectWiseAttendance = <String, List<Map<String, dynamic>>>{}.obs;
+
+  void calculateOverallAttendance() {
+    int overallTotalLectures = subjectWiseAttendance.values
+        .fold(0, (sum, records) => sum + records.length);
+    int overallPresentLectures = subjectWiseAttendance.values.fold(
+        0,
+        (sum, records) =>
+            sum +
+            records
+                .where((record) =>
+                    record['status'].toString().toLowerCase() == 'present')
+                .length);
+
+    total.value = overallTotalLectures;
+    present.value = overallPresentLectures;
+    absent.value = total.value - present.value;
+    overallAttendancePercentage.value =
+        (total.value == 0) ? 0.0 : (present.value / total.value) * 100;
+  }
+
+  Future<void> fetchAttendanceRecords() async {
+    try {
+      isLoading.value = true; // Start loading
+
+      String loggedInUserSpid = currentStudent.value.spid;
+      String stream = currentStudent.value.stream;
+      String semester = currentStudent.value.semester;
+      String division = currentStudent.value.division;
+
+      if (loggedInUserSpid.isEmpty ||
+          stream.isEmpty ||
+          semester.isEmpty ||
+          division.isEmpty) {
+        Get.snackbar("Error", "Student details are missing.");
+        isLoading.value = false;
+        return;
+      }
+
+      DatabaseReference dbRef =
+          FirebaseDatabase.instance.ref().child('attendance');
+      DatabaseEvent event = await dbRef
+          .child(stream)
+          .child(semester)
+          .child(division)
+          .once(); // Fetch data
+
+      if (event.snapshot.value != null) {
+        Map<dynamic, dynamic> subjects =
+            event.snapshot.value as Map<dynamic, dynamic>;
+        Map<String, List<Map<String, dynamic>>> groupedAttendance = {};
+
+        subjects.forEach((subjectName, dates) {
+          if (dates is Map<dynamic, dynamic>) {
+            List<Map<String, dynamic>> attendanceList = [];
+
+            dates.forEach((dateKey, studentRecords) {
+              if (studentRecords is Map<dynamic, dynamic>) {
+                if (studentRecords.containsKey(loggedInUserSpid)) {
+                  var details = studentRecords[loggedInUserSpid];
+                  attendanceList.add({
+                    'date': dateKey,
+                    'status': details['status']?.toString() ?? 'Absent',
+                  });
+                }
+              }
+            });
+
+            if (attendanceList.isNotEmpty) {
+              groupedAttendance[subjectName] = attendanceList;
+            }
+          }
+        });
+
+        subjectWiseAttendance.assignAll(groupedAttendance);
+        print("555555555555555555555555555");
+        // isLoading.value = false;
+      } else {
+        subjectWiseAttendance.clear();
+        Get.snackbar("Info", "No attendance records found.");
+      }
+    } catch (e) {
+      Get.snackbar("Error", "Failed to fetch attendance records: $e");
+    } finally {
+      isLoading.value = false; // Stop loading
+    }
+  }
+
+  // Future<void> fetchAttendanceRecords() async {
+  //   try {
+  //     String loggedInUserSpid = currentStudent.value.spid;
+  //     String stream = currentStudent.value.stream;
+  //     String semester = currentStudent.value.semester;
+  //     String division = currentStudent.value.division;
+
+  //     if (loggedInUserSpid.isEmpty ||
+  //         stream.isEmpty ||
+  //         semester.isEmpty ||
+  //         division.isEmpty) {
+  //       Get.snackbar("Error", "Student details are missing.");
+  //       return;
+  //     }
+
+  //     DatabaseReference dbRef =
+  //         FirebaseDatabase.instance.ref().child('attendance');
+  //     DatabaseEvent event =
+  //         await dbRef.child(stream).child(semester).child(division).once();
+
+  //     if (event.snapshot.value != null) {
+  //       Map<dynamic, dynamic> subjects =
+  //           event.snapshot.value as Map<dynamic, dynamic>;
+
+  //       Map<String, List<Map<String, dynamic>>> groupedAttendance = {};
+
+  //       subjects.forEach((subjectName, dates) {
+  //         if (dates is Map<dynamic, dynamic>) {
+  //           List<Map<String, dynamic>> attendanceList = [];
+
+  //           dates.forEach((dateKey, studentRecords) {
+  //             if (studentRecords is Map<dynamic, dynamic>) {
+  //               if (studentRecords.containsKey(loggedInUserSpid)) {
+  //                 var details = studentRecords[loggedInUserSpid];
+  //                 attendanceList.add({
+  //                   'date': dateKey,
+  //                   'status': details['status']?.toString() ?? 'Absent',
+  //                 });
+  //               }
+  //             }
+  //           });
+
+  //           if (attendanceList.isNotEmpty) {
+  //             groupedAttendance[subjectName] = attendanceList;
+  //           }
+  //         }
+  //       });
+  //       print("+++++++++++++++++++${subjectWiseAttendance['']}");
+
+  //       subjectWiseAttendance.assignAll(groupedAttendance);
+  //       isLoading.value = false; // Update RxMap
+  //     } else {
+  //       subjectWiseAttendance.clear(); // Clear data if no records found
+  //       Get.snackbar("Info", "No attendance records found.");
+  //     }
+  //   } catch (e) {
+  //     Get.snackbar("Error", "Failed to fetch attendance records: $e");
+  //   }
+  // }
 }
