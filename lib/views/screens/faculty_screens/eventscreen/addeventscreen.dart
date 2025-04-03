@@ -95,7 +95,7 @@
 //   }
 // }
 
-import 'package:college_project/controller/main/event_Controller';
+import 'package:college_project/controller/main/event_Controller.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

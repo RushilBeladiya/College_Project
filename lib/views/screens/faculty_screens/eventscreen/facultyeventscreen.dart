@@ -42,7 +42,7 @@
 //   }
 // }
 
-import 'package:college_project/controller/main/event_Controller';
+import 'package:college_project/controller/main/event_Controller.dart';
 import 'package:college_project/views/screens/faculty_screens/eventscreen/addeventscreen.dart';
 import 'package:college_project/views/screens/faculty_screens/eventscreen/facultydetailscreen.dart';
 import 'package:flutter/material.dart';
