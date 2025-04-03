@@ -32,6 +32,11 @@ class StudentHomeController extends GetxController {
     attandencerecods();
     print("+-+-+---+---+-+-+-+");
   }
+  void updateProfileImage(String imageUrl) {
+    currentStudent.update((student) {
+      student?.profileImageUrl = imageUrl;
+    });
+  }
 
   final RxList bottomScreenList = [
     const ProfileScreen(),
@@ -248,6 +253,30 @@ class StudentHomeController extends GetxController {
       Get.snackbar("Error", "Failed to fetch attendance records: $e");
     } finally {
       isLoading.value = false; // Stop loading
+    }
+  }
+  Future<String> uploadImage(XFile imageFile) async {
+    try {
+      String fileName = 'student/${currentStudent.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      Reference ref = storage.ref().child(fileName);
+      UploadTask uploadTask = ref.putData(await imageFile.readAsBytes());
+      TaskSnapshot snapshot = await uploadTask;
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      throw Exception('Failed to upload image: $e');
+    }
+  }
+
+  Future<void> updateStudentProfileImage(String imageUrl) async {
+    try {
+      await dbRef.child(currentStudent.value.uid!).update({
+        'profileImageUrl': imageUrl,
+      });
+      currentStudent.update((student) {
+        student?.profileImageUrl = imageUrl;
+      });
+    } catch (e) {
+      throw Exception('Failed to update profile: $e');
     }
   }
 

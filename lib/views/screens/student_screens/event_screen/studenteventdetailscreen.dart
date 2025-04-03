@@ -1,7 +1,7 @@
-import 'package:college_project/controller/main/event_Controller';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../controller/main/event_Controller.dart';
 import '../../../../core/utils/colors.dart';
 
 class StudentEventDetailScreen extends StatefulWidget {
