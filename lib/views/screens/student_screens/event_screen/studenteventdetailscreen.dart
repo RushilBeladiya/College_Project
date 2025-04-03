@@ -2,6 +2,8 @@ import 'package:college_project/controller/main/event_Controller';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/utils/colors.dart';
+
 class StudentEventDetailScreen extends StatefulWidget {
   final Map<String, dynamic> event;
 
@@ -18,26 +20,103 @@ class _StudentEventDetailScreenState extends State<StudentEventDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.event['title'])),
+      backgroundColor: AppColor.appBackGroundColor, // White background
+      appBar: AppBar(
+        title: Text(
+          widget.event['title'],
+          style: TextStyle(
+            color: AppColor.whiteColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        leading: BackButton(
+          color: AppColor.whiteColor,
+        ),
+        backgroundColor: AppColor.primaryColor,
+        elevation: 2,
+        iconTheme: IconThemeData(color: AppColor.primaryColor),
+      ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(widget.event['description'], style: TextStyle(fontSize: 16)),
-            SizedBox(height: 10),
-            Text('Date: ${widget.event['dateTime']}',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-            if (widget.event['fileUrl'] != null)
-              ElevatedButton(
-                onPressed: () {},
-                child: Text('View PDF'),
+            // Event Title
+            Text(
+              widget.event['title'],
+              style: TextStyle(
+                color: AppColor.primaryColor,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
               ),
+            ),
+            SizedBox(height: 10),
+
+            // Event Description
+            Text(
+              widget.event['description'],
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black87,
+              ),
+            ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () =>
-                  controller.applyForEvent(widget.event['id'], 'student_id'),
-              child: Text('Apply for Event'),
+
+            // Date & Time Section
+            Row(
+              children: [
+                Icon(Icons.calendar_today, color: AppColor.primaryColor),
+                SizedBox(width: 8),
+                Text(
+                  'Date: ${widget.event['dateTime']}',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColor.primaryColor,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+
+            // View PDF Button (if file exists)
+            if (widget.event['fileUrl'] != null)
+              Center(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    // Implement PDF viewing logic
+                  },
+                  icon: Icon(Icons.picture_as_pdf, color: Colors.white),
+                  label: Text('View PDF'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.primaryColor,
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            SizedBox(height: 30),
+
+            // Apply for Event Button
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  controller.applyForEvent(widget.event['id'], 'student_id');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColor.primaryColor,
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  'Apply for Event',
+                  style: TextStyle(fontSize: 16, color: Colors.white),
+                ),
+              ),
             ),
           ],
         ),

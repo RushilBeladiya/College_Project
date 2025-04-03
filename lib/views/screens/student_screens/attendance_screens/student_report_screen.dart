@@ -159,8 +159,8 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
   @override
   void initState() {
     super.initState();
-    // studentHomeController.fetchAttendanceRecords();
-    // studentHomeController.calculateOverallAttendance();
+    studentHomeController.fetchAttendanceRecords();
+    studentHomeController.calculateOverallAttendance();
     // loadAttendanceData();
   }
 

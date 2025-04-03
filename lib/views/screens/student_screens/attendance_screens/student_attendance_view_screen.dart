@@ -413,6 +413,7 @@ class _StudentAttendanceViewScreenState
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      color: Colors.white,
                       child: Padding(
                         padding: const EdgeInsets.all(12),
                         child: Row(
@@ -472,6 +473,7 @@ class _StudentAttendanceViewScreenState
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
+                          color: Colors.white,
                           child: ExpansionTile(
                             title: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

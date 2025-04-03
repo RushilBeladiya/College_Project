@@ -18,28 +18,89 @@ class _StudentEventScreenState extends State<StudentEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColor.appBackGroundColor,
+      backgroundColor: AppColor.appBackGroundColor, // White background
       appBar: AppBar(
-          title: Text('Student Events',
-              style: TextStyle(color: AppColor.primaryColor)),
-          backgroundColor: Colors.white),
-      body: Obx(() => ListView.builder(
-            itemCount: controller.events.length,
-            itemBuilder: (context, index) {
-              final event = controller.events[index];
-              return Card(
-                color: AppColor.primaryColor.withOpacity(0.1),
-                child: ListTile(
-                  title: Text(event['title'],
-                      style: TextStyle(color: AppColor.primaryColor)),
-                  subtitle: Text(event['description']),
-                  trailing: Text(event['dateTime']),
-                  onTap: () =>
-                      Get.to(() => StudentEventDetailScreen(event: event)),
+        title: Text(
+          'Student Events',
+          style: TextStyle(
+            color: AppColor.whiteColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        leading: BackButton(
+          color: AppColor.whiteColor,
+        ),
+        backgroundColor: AppColor.primaryColor,
+        elevation: 2, // Adds a slight shadow for a modern look
+        iconTheme: IconThemeData(color: AppColor.primaryColor),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Obx(() => controller.events.isEmpty
+            ? Center(
+                child: Text(
+                  "No events available",
+                  style: TextStyle(
+                    color: AppColor.primaryColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              );
-            },
-          )),
+              )
+            : ListView.builder(
+                itemCount: controller.events.length,
+                itemBuilder: (context, index) {
+                  final event = controller.events[index];
+                  return Card(
+                    elevation: 3,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    color: Colors.white,
+                    child: ListTile(
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      title: Text(
+                        event['title'],
+                        style: TextStyle(
+                          color: AppColor.primaryColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          event['description'],
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      trailing: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.calendar_today,
+                              color: AppColor.primaryColor, size: 18),
+                          SizedBox(height: 4),
+                          Text(
+                            event['dateTime'],
+                            style: TextStyle(
+                              color: AppColor.primaryColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      onTap: () =>
+                          Get.to(() => StudentEventDetailScreen(event: event)),
+                    ),
+                  );
+                },
+              )),
+      ),
     );
   }
 }

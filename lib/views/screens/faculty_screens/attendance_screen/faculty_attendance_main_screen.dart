@@ -16,7 +16,7 @@ class FacultyAttendanceScreen extends StatefulWidget {
 class _FacultyAttendanceScreenState extends State<FacultyAttendanceScreen> {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref("classes");
   final FacultyHomeController _facultyHomeController =
-  Get.put(FacultyHomeController());
+      Get.put(FacultyHomeController());
 
   @override
   void initState() {
@@ -36,7 +36,11 @@ class _FacultyAttendanceScreenState extends State<FacultyAttendanceScreen> {
       appBar: AppBar(
         title: const Text(
           'Class Manager',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        leading: BackButton(
+          color: AppColor.whiteColor,
         ),
         backgroundColor: AppColor.primaryColor,
         elevation: 4,
@@ -63,8 +67,8 @@ class _FacultyAttendanceScreenState extends State<FacultyAttendanceScreen> {
                     ),
                     title: Text(
                       "${_facultyHomeController.facultyModel.value.firstName} "
-                          "${_facultyHomeController.facultyModel.value.lastName} "
-                          "${_facultyHomeController.facultyModel.value.surName}",
+                      "${_facultyHomeController.facultyModel.value.lastName} "
+                      "${_facultyHomeController.facultyModel.value.surName}",
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold),
                     ),
@@ -105,7 +109,7 @@ class _FacultyAttendanceScreenState extends State<FacultyAttendanceScreen> {
                   Map<String, dynamic> classMap = Map<String, dynamic>.from(
                       snapshot.data!.snapshot.value as Map);
                   List<Map<String, dynamic>> createdClasses =
-                  classMap.entries.map((e) {
+                      classMap.entries.map((e) {
                     return {
                       'key': e.key,
                       ...Map<String, dynamic>.from(e.value)
@@ -146,7 +150,7 @@ class _FacultyAttendanceScreenState extends State<FacultyAttendanceScreen> {
                             leading: CircleAvatar(
                               backgroundColor: AppColor.primaryColor,
                               child:
-                              const Icon(Icons.school, color: Colors.white),
+                                  const Icon(Icons.school, color: Colors.white),
                             ),
                             title: Text(
                               '${classData['stream']} - ${classData['semester']}-${classData['division']}',
@@ -190,9 +194,9 @@ class _FacultyAttendanceScreenState extends State<FacultyAttendanceScreen> {
             context,
             MaterialPageRoute(
                 builder: (context) => CreateClassScreen(
-                  facultyPhoneNumber:
-                  _facultyHomeController.facultyModel.value.phoneNumber,
-                )),
+                      facultyPhoneNumber:
+                          _facultyHomeController.facultyModel.value.phoneNumber,
+                    )),
           );
         },
         backgroundColor: AppColor.primaryColor,

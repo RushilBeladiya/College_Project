@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../../../../core/utils/colors.dart';
 
 class ClassDetailsScreen extends StatefulWidget {
@@ -59,7 +60,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
     DatabaseEvent event = await ref.once();
     if (event.snapshot.value != null) {
       Map<dynamic, dynamic> data =
-      Map<dynamic, dynamic>.from(event.snapshot.value as Map);
+          Map<dynamic, dynamic>.from(event.snapshot.value as Map);
 
       setState(() {
         attendanceStatus = data.map((key, value) =>
@@ -115,7 +116,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
 
     setState(() {
       attendanceStatus[spid] =
-      attendanceStatus[spid] == 'Present' ? 'Absent' : 'Present';
+          attendanceStatus[spid] == 'Present' ? 'Absent' : 'Present';
     });
   }
 
@@ -202,9 +203,10 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
         title: Text(
           'Attendance',
           style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-          ),
+              fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
+        ),
+        leading: BackButton(
+          color: AppColor.whiteColor,
         ),
         backgroundColor: AppColor.primaryColor,
         centerTitle: true,
@@ -238,68 +240,68 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
             ),
             child: _isSearchExpanded
                 ? Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: [
-                  Icon(Icons.search, color: Colors.white, size: 20),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      focusNode: _searchFocusNode,
-                      decoration: InputDecoration(
-                        hintText: 'Search students...',
-                        border: InputBorder.none,
-                        hintStyle: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      children: [
+                        Icon(Icons.search, color: Colors.white, size: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            focusNode: _searchFocusNode,
+                            decoration: InputDecoration(
+                              hintText: 'Search students...',
+                              border: InputBorder.none,
+                              hintStyle: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 14,
+                              ),
+                              contentPadding: EdgeInsets.only(bottom: 15),
+                            ),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                _searchQuery = value;
+                              });
+                            },
+                          ),
                         ),
-                        contentPadding: EdgeInsets.only(bottom: 15),
-                      ),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          _searchQuery = value;
-                        });
-                      },
+                        if (_searchQuery.isNotEmpty)
+                          IconButton(
+                            icon: Icon(Icons.close,
+                                size: 18, color: Colors.white),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _searchQuery = '';
+                              });
+                            },
+                          ),
+                      ],
                     ),
-                  ),
-                  if (_searchQuery.isNotEmpty)
-                    IconButton(
-                      icon: Icon(Icons.close,
-                          size: 18, color: Colors.white),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() {
-                          _searchQuery = '';
-                        });
-                      },
-                    ),
-                ],
-              ),
-            )
+                  )
                 : Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(20),
-                onTap: () {
-                  setState(() {
-                    _isSearchExpanded = true;
-                    _searchFocusNode.requestFocus();
-                  });
-                },
-                child: Center(
-                  child: Icon(
-                    Icons.search,
-                    color: Colors.white,
-                    size: 22,
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () {
+                        setState(() {
+                          _isSearchExpanded = true;
+                          _searchFocusNode.requestFocus();
+                        });
+                      },
+                      child: Center(
+                        child: Icon(
+                          Icons.search,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
           ),
           if (!_isSearchExpanded) SizedBox(width: 12),
         ],
@@ -357,7 +359,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         padding:
-                        EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                         elevation: 0,
                       ),
                       child: Row(
@@ -411,143 +413,143 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
           Expanded(
             child: filteredStudents.isEmpty
                 ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.group_off,
-                    size: 48,
-                    color: AppColor.warningColor,
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    _searchQuery.isEmpty
-                        ? "No Students Found"
-                        : "No matching students found",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                      color: AppColor.warningColor,
-                    ),
-                  ),
-                ],
-              ),
-            )
-                : ListView.builder(
-              padding: EdgeInsets.all(16),
-              itemCount: filteredStudents.length,
-              itemBuilder: (context, index) {
-                var student = filteredStudents[index];
-                var firstName = student['firstName'] ?? 'Unknown';
-                var lastName = student['lastName'] ?? 'Unknown';
-                var spid = student['spid']?.toString() ?? 'N/A';
-
-                String status = attendanceStatus[spid] ?? 'Absent';
-                Color statusColor = _getStatusColor(status);
-
-                // Highlight if matches search
-                bool isHighlighted = _searchQuery.isNotEmpty &&
-                    ('$firstName $lastName $spid'
-                        .toLowerCase()
-                        .contains(_searchQuery.toLowerCase()));
-
-                return Container(
-                  margin: EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: isHighlighted
-                        ? AppColor.primaryColor.withOpacity(0.1)
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    border: isHighlighted
-                        ? Border.all(
-                      color: AppColor.primaryColor,
-                      width: 1.5,
-                    )
-                        : null,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ListTile(
-                    contentPadding:
-                    EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    leading: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: isHighlighted
-                            ? AppColor.primaryColor.withOpacity(0.8)
-                            : AppColor.primaryColor,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${index + 1}',
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.group_off,
+                          size: 48,
+                          color: AppColor.warningColor,
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          _searchQuery.isEmpty
+                              ? "No Students Found"
+                              : "No matching students found",
                           style: TextStyle(
-                            color: AppColor.whiteColor,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: AppColor.warningColor,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                    title: Text(
-                      '$firstName $lastName',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isHighlighted
-                            ? AppColor.primaryColor
-                            : AppColor.textColor,
-                      ),
-                    ),
-                    subtitle: Text(
-                      'ID: $spid',
-                      style: TextStyle(
-                        color: isHighlighted
-                            ? AppColor.primaryColor.withOpacity(0.8)
-                            : AppColor.textColor.withOpacity(0.6),
-                        fontSize: 12,
-                      ),
-                    ),
-                    trailing: isCurrentDate
-                        ? Transform.scale(
-                      scale: 0.8,
-                      child: Switch(
-                        value: status == 'Present',
-                        onChanged: (value) =>
-                            _toggleAttendance(spid),
-                        activeColor: AppColor.successColor,
-                        inactiveThumbColor: AppColor.errorColor,
-                        inactiveTrackColor:
-                        AppColor.errorColor.withOpacity(0.2),
-                        activeTrackColor:
-                        AppColor.successColor.withOpacity(0.4),
-                      ),
-                    )
-                        : Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        status,
-                        style: TextStyle(
-                          color: statusColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                  )
+                : ListView.builder(
+                    padding: EdgeInsets.all(16),
+                    itemCount: filteredStudents.length,
+                    itemBuilder: (context, index) {
+                      var student = filteredStudents[index];
+                      var firstName = student['firstName'] ?? 'Unknown';
+                      var lastName = student['lastName'] ?? 'Unknown';
+                      var spid = student['spid']?.toString() ?? 'N/A';
+
+                      String status = attendanceStatus[spid] ?? 'Absent';
+                      Color statusColor = _getStatusColor(status);
+
+                      // Highlight if matches search
+                      bool isHighlighted = _searchQuery.isNotEmpty &&
+                          ('$firstName $lastName $spid'
+                              .toLowerCase()
+                              .contains(_searchQuery.toLowerCase()));
+
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: isHighlighted
+                              ? AppColor.primaryColor.withOpacity(0.1)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: isHighlighted
+                              ? Border.all(
+                                  color: AppColor.primaryColor,
+                                  width: 1.5,
+                                )
+                              : null,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
-                      ),
-                    ),
+                        child: ListTile(
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: isHighlighted
+                                  ? AppColor.primaryColor.withOpacity(0.8)
+                                  : AppColor.primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${index + 1}',
+                                style: TextStyle(
+                                  color: AppColor.whiteColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            '$firstName $lastName',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isHighlighted
+                                  ? AppColor.primaryColor
+                                  : AppColor.textColor,
+                            ),
+                          ),
+                          subtitle: Text(
+                            'ID: $spid',
+                            style: TextStyle(
+                              color: isHighlighted
+                                  ? AppColor.primaryColor.withOpacity(0.8)
+                                  : AppColor.textColor.withOpacity(0.6),
+                              fontSize: 12,
+                            ),
+                          ),
+                          trailing: isCurrentDate
+                              ? Transform.scale(
+                                  scale: 0.8,
+                                  child: Switch(
+                                    value: status == 'Present',
+                                    onChanged: (value) =>
+                                        _toggleAttendance(spid),
+                                    activeColor: AppColor.successColor,
+                                    inactiveThumbColor: AppColor.errorColor,
+                                    inactiveTrackColor:
+                                        AppColor.errorColor.withOpacity(0.2),
+                                    activeTrackColor:
+                                        AppColor.successColor.withOpacity(0.4),
+                                  ),
+                                )
+                              : Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: statusColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    status,
+                                    style: TextStyle(
+                                      color: statusColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
 
           // Submit Button

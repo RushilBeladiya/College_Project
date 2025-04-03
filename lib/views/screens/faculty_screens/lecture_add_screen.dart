@@ -215,6 +215,9 @@ class _LectureAddScreenState extends State<LectureAddScreen> {
       appBar: AppBar(
         backgroundColor: AppColor.primaryColor, // Apply primary color
         title: const Text("Add Lecture", style: TextStyle(color: Colors.white)),
+        leading: BackButton(
+          color: AppColor.whiteColor,
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.save,

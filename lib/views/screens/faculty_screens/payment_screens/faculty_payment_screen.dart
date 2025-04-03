@@ -61,9 +61,13 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Payment Status'),
+        title: const Text('Payment Status',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: AppColor.primaryColor,
+        leading: BackButton(
+          color: AppColor.whiteColor,
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -76,7 +80,7 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide:
-                  BorderSide(color: AppColor.primaryColor, width: 2),
+                      BorderSide(color: AppColor.primaryColor, width: 2),
                 ),
               ),
               value: _selectedStream,
@@ -105,7 +109,7 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide:
-                  BorderSide(color: AppColor.primaryColor, width: 2),
+                      BorderSide(color: AppColor.primaryColor, width: 2),
                 ),
               ),
               value: _selectedSemester,
@@ -131,7 +135,7 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColor.primaryColor,
                 padding:
-                const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -139,12 +143,12 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
               child: _isLoading
                   ? CircularProgressIndicator(color: Colors.white)
                   : Text(
-                'Check Payment Status',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold),
-              ),
+                      'Check Payment Status',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                    ),
             ),
             const SizedBox(height: 20),
 
@@ -153,26 +157,26 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
               child: _isLoading
                   ? Center(child: CircularProgressIndicator())
                   : ListView(
-                children: [
-                  if (_paidStudents.isEmpty && _unpaidStudents.isEmpty)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Text(
-                          'No students found',
-                          style: TextStyle(
-                              fontSize: 18, color: Colors.black54),
-                        ),
-                      ),
+                      children: [
+                        if (_paidStudents.isEmpty && _unpaidStudents.isEmpty)
+                          Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Text(
+                                'No students found',
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.black54),
+                              ),
+                            ),
+                          ),
+                        if (_paidStudents.isNotEmpty)
+                          _buildSection(
+                              'Paid Students', _paidStudents, Colors.green),
+                        if (_unpaidStudents.isNotEmpty)
+                          _buildSection(
+                              'Unpaid Students', _unpaidStudents, Colors.red),
+                      ],
                     ),
-                  if (_paidStudents.isNotEmpty)
-                    _buildSection(
-                        'Paid Students', _paidStudents, Colors.green),
-                  if (_unpaidStudents.isNotEmpty)
-                    _buildSection(
-                        'Unpaid Students', _unpaidStudents, Colors.red),
-                ],
-              ),
             ),
 
             /// ✅ Report Button at the Bottom
@@ -186,7 +190,7 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.primaryColor,
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -229,13 +233,13 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
     try {
       // Fetch Paid Students
       DatabaseReference paymentsRef =
-      FirebaseDatabase.instance.ref().child('paymentsComplete');
+          FirebaseDatabase.instance.ref().child('paymentsComplete');
       final paymentsEvent = await paymentsRef.once();
 
       if (paymentsEvent.snapshot.value != null &&
           paymentsEvent.snapshot.value is Map) {
         final paymentsData =
-        Map<String, dynamic>.from(paymentsEvent.snapshot.value as Map);
+            Map<String, dynamic>.from(paymentsEvent.snapshot.value as Map);
 
         paymentsData.forEach((key, value) {
           final payment = Map<String, dynamic>.from(value ?? {});
@@ -253,13 +257,13 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
 
       // Fetch Unpaid Students
       DatabaseReference studentsRef =
-      FirebaseDatabase.instance.ref().child('student');
+          FirebaseDatabase.instance.ref().child('student');
       final studentsEvent = await studentsRef.once();
 
       if (studentsEvent.snapshot.value != null &&
           studentsEvent.snapshot.value is Map) {
         final studentsData =
-        Map<String, dynamic>.from(studentsEvent.snapshot.value as Map);
+            Map<String, dynamic>.from(studentsEvent.snapshot.value as Map);
 
         studentsData.forEach((key, value) {
           final student = Map<String, dynamic>.from(value ?? {});
@@ -270,7 +274,7 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
               (student['status'] ?? '') == 'unpaid') {
             _unpaidStudents.add({
               'name':
-              '${student['firstName'] ?? ''} ${student['lastName'] ?? ''}',
+                  '${student['firstName'] ?? ''} ${student['lastName'] ?? ''}',
               'spid': student['spid'] ?? 'N/A',
               'status': 'Unpaid'
             });
@@ -294,13 +298,13 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
       child: Column(
         children: students
             .map((student) => ListTile(
-          title: Text(student['name']),
-          subtitle: Text('SPID: ${student['spid']}'),
-          trailing: Text(
-            student['status'],
-            style: TextStyle(color: color, fontWeight: FontWeight.bold),
-          ),
-        ))
+                  title: Text(student['name']),
+                  subtitle: Text('SPID: ${student['spid']}'),
+                  trailing: Text(
+                    student['status'],
+                    style: TextStyle(color: color, fontWeight: FontWeight.bold),
+                  ),
+                ))
             .toList(),
       ),
     );
