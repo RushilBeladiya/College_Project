@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:college_project/views/screens/student_screens/attendance_screens/student_attendance_view_screen.dart';
 import 'package:college_project/views/screens/student_screens/fees_payment_screen/fess_paying_screen.dart';
 import 'package:college_project/views/screens/student_screens/home/bottom_navigation_screen/profile_screen.dart';
@@ -22,15 +24,34 @@ class StudentHomeController extends GetxController {
   final DatabaseReference dbRef =
       FirebaseDatabase.instance.ref().child('student');
 
-  // final RxMap<String, List<Map<String, dynamic>>> subjectWiseAttendance =
-  //     RxMap<String, List<Map<String, dynamic>>>(); // Initialize as RxMap
-
   @override
   void onInit() {
     super.onInit();
-    fetchCurrentUserData();
-    attandencerecods();
-    print("+-+-+---+---+-+-+-+");
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInitialData();
+    });
+    // fetchCurrentUserData();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   attandencerecods();
+    // });
+    // // attandencerecods();
+    // print("+-+-+---+---+-+-+-+");
+  }
+
+
+  Future<void> _loadInitialData() async {
+    try {
+      // First ensure student data is loaded
+      await fetchCurrentUserData();
+
+      // Then fetch attendance records
+      await fetchAttendanceRecords();
+
+      // Calculate attendance percentage
+      calculateOverallAttendance();
+    } catch (e) {
+      Get.snackbar("Error", "Failed to load data: ${e.toString()}");
+    }
   }
   void updateProfileImage(String imageUrl) {
     currentStudent.update((student) {
@@ -45,78 +66,6 @@ class StudentHomeController extends GetxController {
     FeePaymentScreen(),
     const SettingsScreen(),
   ].obs;
-
-  // Future<void> uploadProfileImage(String uid) async {
-  //   try {
-  //     isLoading.value = true;
-  //
-  //     final XFile? pickedFile =
-  //         await picker.pickImage(source: ImageSource.gallery);
-  //     if (pickedFile != null) {
-  //       File imageFile = File(pickedFile.path);
-  //       // Upload to Firebase Storage
-  //       String fileName = '$uid-profile-image.jpg';
-  //       Reference ref = storage.ref().child('profile_images').child(fileName);
-  //
-  //       UploadTask uploadTask = ref.putFile(imageFile);
-  //
-  //       // Show circular progress while the upload is in progress
-  //       uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
-  //         // Here you can track the progress if needed
-  //       });
-  //
-  //       TaskSnapshot snapshot = await uploadTask;
-  //       String downloadUrl = await snapshot.ref.getDownloadURL();
-  //
-  //       await firestore.collection('users').doc(uid).update({
-  //         'profile_image_url': downloadUrl,
-  //       });
-  //
-  //       // userModel.update((user) {
-  //       //   if (user != null) {
-  //       //     user.profileImageUrl = downloadUrl;
-  //       //   }
-  //       // });
-  //     }
-  //
-  //     isLoading.value = false; // Set loading to false when upload finishes
-  //   } catch (e) {
-  //     isLoading.value = false; // Reset loading on error
-  //     Get.snackbar("Error", e.toString());
-  //   }
-  // }
-
-  // void fetchUserData() async {
-  //   try {
-  //     String uid = authUser.currentUser!.uid;
-  //     DocumentSnapshot userDoc =
-  //         await FirebaseFirestore.instance.collection('users').doc(uid).get();
-  //
-  //     userModel.value = StudentModel.fromFirestore(userDoc);
-  //   } catch (e) {
-  //     Get.snackbar("Error", "Failed to fetch user data: $e");
-  //   }
-  // }
-
-  // Future<void> updateUserData(String username) async {
-  //   String uid = userModel.value.uid;
-  //   try {
-  //     if (username != userModel.value.firstName) {
-  //       await FirebaseFirestore.instance.collection('users').doc(uid).update({
-  //         'username': username,
-  //       });
-  //       fetchUserData();
-  //       await Fluttertoast.showToast(
-  //           msg: "Update successful", toastLength: Toast.LENGTH_LONG);
-  //       Get.back();
-  //     } else {
-  //       await Fluttertoast.showToast(
-  //           msg: "Your username is same!!!", toastLength: Toast.LENGTH_LONG);
-  //     }
-  //   } catch (e) {
-  //     Get.snackbar("Error", "Failed to update profile: $e");
-  //   }
-  // }
 
   var currentStudent = StudentModel(
     uid: '',
@@ -133,10 +82,6 @@ class StudentHomeController extends GetxController {
     status: '',
   ).obs;
 
-  void attandencerecods() async {
-    await fetchAttendanceRecords();
-    calculateOverallAttendance();
-  }
 
   Future<void> fetchCurrentUserData() async {
     try {
@@ -267,76 +212,42 @@ class StudentHomeController extends GetxController {
     }
   }
 
-  Future<void> updateStudentProfileImage(String imageUrl) async {
-    try {
-      await dbRef.child(currentStudent.value.uid!).update({
-        'profileImageUrl': imageUrl,
-      });
-      currentStudent.update((student) {
-        student?.profileImageUrl = imageUrl;
-      });
-    } catch (e) {
-      throw Exception('Failed to update profile: $e');
-    }
-  }
-
-  // Future<void> fetchAttendanceRecords() async {
+  // Future<void> updateStudentProfileImage(String imageUrl) async {
   //   try {
-  //     String loggedInUserSpid = currentStudent.value.spid;
-  //     String stream = currentStudent.value.stream;
-  //     String semester = currentStudent.value.semester;
-  //     String division = currentStudent.value.division;
-
-  //     if (loggedInUserSpid.isEmpty ||
-  //         stream.isEmpty ||
-  //         semester.isEmpty ||
-  //         division.isEmpty) {
-  //       Get.snackbar("Error", "Student details are missing.");
-  //       return;
-  //     }
-
-  //     DatabaseReference dbRef =
-  //         FirebaseDatabase.instance.ref().child('attendance');
-  //     DatabaseEvent event =
-  //         await dbRef.child(stream).child(semester).child(division).once();
-
-  //     if (event.snapshot.value != null) {
-  //       Map<dynamic, dynamic> subjects =
-  //           event.snapshot.value as Map<dynamic, dynamic>;
-
-  //       Map<String, List<Map<String, dynamic>>> groupedAttendance = {};
-
-  //       subjects.forEach((subjectName, dates) {
-  //         if (dates is Map<dynamic, dynamic>) {
-  //           List<Map<String, dynamic>> attendanceList = [];
-
-  //           dates.forEach((dateKey, studentRecords) {
-  //             if (studentRecords is Map<dynamic, dynamic>) {
-  //               if (studentRecords.containsKey(loggedInUserSpid)) {
-  //                 var details = studentRecords[loggedInUserSpid];
-  //                 attendanceList.add({
-  //                   'date': dateKey,
-  //                   'status': details['status']?.toString() ?? 'Absent',
-  //                 });
-  //               }
-  //             }
-  //           });
-
-  //           if (attendanceList.isNotEmpty) {
-  //             groupedAttendance[subjectName] = attendanceList;
-  //           }
-  //         }
-  //       });
-  //       print("+++++++++++++++++++${subjectWiseAttendance['']}");
-
-  //       subjectWiseAttendance.assignAll(groupedAttendance);
-  //       isLoading.value = false; // Update RxMap
-  //     } else {
-  //       subjectWiseAttendance.clear(); // Clear data if no records found
-  //       Get.snackbar("Info", "No attendance records found.");
-  //     }
+  //     await dbRef.child(currentStudent.value.uid).update({
+  //       'profileImageUrl': imageUrl,
+  //     });
+  //     currentStudent.update((student) {
+  //       student?.profileImageUrl = imageUrl;
+  //     });
   //   } catch (e) {
-  //     Get.snackbar("Error", "Failed to fetch attendance records: $e");
+  //     throw Exception('Failed to update profile: $e');
   //   }
   // }
+
+  Future<void> updateStudentProfileImage(String imageUrl) async {
+    try {
+      String uid = currentStudent.value.uid;
+      await FirebaseDatabase.instance
+          .ref()
+          .child('student')
+          .child(uid)
+          .update({'profileImageUrl': imageUrl});
+
+      currentStudent.value.profileImageUrl = imageUrl;
+      currentStudent.refresh();
+    } catch (e) {
+      rethrow;
+    }
+  }
+  Future<String> uploadImageToStorage(File imageFile) async {
+    try {
+      String fileName = 'student_images/${currentStudent.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
+      await storageRef.putFile(imageFile);
+      return await storageRef.getDownloadURL();
+    } catch (e) {
+      throw e;
+    }
+  }
 }

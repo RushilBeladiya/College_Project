@@ -47,9 +47,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
         centerTitle: true,
         backgroundColor: AppColor.primaryColor,
-        leading: BackButton(
-          color: AppColor.whiteColor,
-        ),
+        // leading: BackButton(
+        //   color: AppColor.whiteColor,
+        // ),
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 15.h),

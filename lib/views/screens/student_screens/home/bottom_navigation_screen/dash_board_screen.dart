@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:college_project/controller/Administrator/home/admin_home_controller.dart';
 import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/controller/Faculty/home/faculty_home_controller.dart';
@@ -14,12 +16,13 @@ import 'package:college_project/views/screens/student_screens/home/college_info_
 import 'package:college_project/views/screens/student_screens/home/contact_us_screen.dart';
 import 'package:college_project/views/screens/student_screens/result_screen/resultscreen.dart';
 import 'package:college_project/views/screens/student_screens/syllabus_screen/student_syllabus_screen.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:share_plus/share_plus.dart';
-
 import '../../../../../controller/Auth/dateTimeController.dart';
 import '../../../../../controller/main/syllabus_controller.dart';
 import '../../../../../core/utils/colors.dart';
@@ -42,17 +45,151 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
   final SyllabusController controller = Get.put(SyllabusController());
   final AdminHomeController adminHomeController =
       Get.put(AdminHomeController());
+  final ImagePicker _picker = ImagePicker();
+
 
   AuthController authController = Get.find();
+  Future<void> _pickAndUploadImage() async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
 
+    Get.dialog(
+      const Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+
+    try {
+      File imageFile = File(pickedFile.path);
+      String fileName = 'student_images/${homeController.currentStudent.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      // Upload to Firebase Storage
+      Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
+      await storageRef.putFile(imageFile);
+      String imageUrl = await storageRef.getDownloadURL();
+
+      // Update in Firebase Database
+      await homeController.updateStudentProfileImage(imageUrl);
+
+      Get.back(); // Close loading dialog
+    } catch (e) {
+      Get.back(); // Close loading dialog
+      Get.snackbar('Error', 'Failed to upload image: ${e.toString()}');
+    }
+  }
+
+  Future<void> _deleteProfileImage() async {
+    try {
+      // Get the current image URL to delete from storage
+      String currentImageUrl = homeController.currentStudent.value.profileImageUrl;
+      if (currentImageUrl.isNotEmpty) {
+        // Extract the file path from the URL
+        Uri uri = Uri.parse(currentImageUrl);
+        String filePath = uri.path.split('/o/')[1].split('?')[0];
+
+        // Delete from storage
+        Reference storageRef = FirebaseStorage.instance.ref().child(filePath);
+        await storageRef.delete();
+      }
+
+      // Update in Firebase Database
+      await homeController.updateStudentProfileImage("");
+
+      Get.snackbar('Success', 'Profile image removed');
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to delete image: ${e.toString()}');
+    }
+  }
+
+  Widget _buildProfileImage() {
+    return GestureDetector(
+      onTap: _pickAndUploadImage,
+      child: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          Obx(
+                () => CircleAvatar(
+              backgroundColor: AppColor.whiteColor,
+              radius: 42.r,
+              child: CircleAvatar(
+                radius: 40.r,
+                backgroundImage: homeController
+                    .currentStudent
+                    .value
+                    .profileImageUrl
+                    .isNotEmpty
+                    ? NetworkImage(homeController
+                    .currentStudent.value.profileImageUrl)
+                    : const AssetImage(AppImage.user)
+                as ImageProvider,
+              ),
+            ),
+          ),
+          homeController.currentStudent.value.profileImageUrl.isNotEmpty?
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: GestureDetector(
+                onTap: _deleteProfileImage,
+                child: Container(
+                  padding: EdgeInsets.all(4.r),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColor.whiteColor, width: 2),
+                  ),
+                  child: Icon(
+                    Icons.delete,
+                    color: AppColor.whiteColor,
+                    size: 16.sp,
+                  ),
+                ),
+              ),
+            ):
+          Positioned(
+            right: homeController.currentStudent.value.profileImageUrl.isNotEmpty ? 0.w : 0,
+            bottom: 0,
+            child: Container(
+              padding: EdgeInsets.all(4.r),
+              decoration: BoxDecoration(
+                color: AppColor.primaryColor,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColor.whiteColor, width: 2),
+              ),
+              child: Icon(
+                Icons.edit,
+                color: AppColor.whiteColor,
+                size: 16.sp,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   // double overallAttendancePercentage = 0.0; // Add this variable
 
-  @override
-  void initState() {
-    super.initState();
-    // homeController.fetchAttendanceRecords();
-    // homeController.calculateOverallAttendance();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     _loadInitialData();
+  //   });
+  // }
+  //
+  // Future<void> _loadInitialData() async {
+  //   try {
+  //     // First ensure student data is loaded
+  //     await homeController.fetchCurrentUserData();
+  //
+  //     // Then fetch attendance records
+  //     await homeController.fetchAttendanceRecords();
+  //
+  //     // Calculate attendance percentage
+  //     homeController.calculateOverallAttendance();
+  //   } catch (e) {
+  //     Get.snackbar("Error", "Failed to load data: ${e.toString()}");
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -123,16 +260,16 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                       ],
                     ),
                     const Spacer(),
-                    IconButton(
-                      icon: Icon(
-                        Icons.person_pin,
-                        color: AppColor.whiteColor,
-                        size: 22.sp,
-                      ),
-                      onPressed: () async {
-                        await Get.to(() => const ProfileScreen());
-                      },
-                    ),
+                    // IconButton(
+                    //   icon: Icon(
+                    //     Icons.person_pin,
+                    //     color: AppColor.whiteColor,
+                    //     size: 22.sp,
+                    //   ),
+                    //   onPressed: () async {
+                    //     await Get.to(() => const ProfileScreen());
+                    //   },
+                    // ),
                     IconButton(
                       icon: Icon(
                         Icons.settings,
@@ -154,30 +291,16 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                   children: [
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 10.w),
-                      child: Obx(
-                        () => CircleAvatar(
-                          backgroundColor: AppColor.whiteColor,
-                          radius: 32.r,
-                          child: CircleAvatar(
-                            radius: 30.r,
-                            backgroundImage: homeController.currentStudent.value
-                                    .profileImageUrl.isNotEmpty
-                                ? NetworkImage(homeController
-                                    .currentStudent.value.profileImageUrl)
-                                : const AssetImage(AppImage.user)
-                                    as ImageProvider,
-                          ),
-                        ),
-                      ),
+                      child: _buildProfileImage(),
                     ),
                     SizedBox(
                       width: 8.w,
                     ),
-                    Column(
+                    Expanded(child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Obx(
-                          () => Text(
+                              () => Text(
                             ("${homeController.currentStudent.value.firstName} ${homeController.currentStudent.value.lastName} ${homeController.currentStudent.value.surName}")
                                 .toUpperCase(),
                             style: TextStyle(
@@ -191,7 +314,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                           height: 3.h,
                         ),
                         Obx(
-                          () => Text(
+                              () => Text(
                             'Mobile : ${(homeController.currentStudent.value.phoneNumber)}',
                             style: TextStyle(
                               color: AppColor.whiteColor,
@@ -203,7 +326,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                           height: 3.h,
                         ),
                         Obx(
-                          () => Text(
+                              () => Text(
                             'SPID : ${(homeController.currentStudent.value.spid)}',
                             style: TextStyle(
                               color: AppColor.whiteColor,
@@ -228,11 +351,11 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                               height: 3.h,
                             ),
                             Obx(
-                              () => LinearPercentIndicator(
+                                  () => LinearPercentIndicator(
                                 width: 140.w,
                                 lineHeight: 5.h,
                                 percent: homeController
-                                        .overallAttendancePercentage.value /
+                                    .overallAttendancePercentage.value /
                                     100,
                                 leading: Text(
                                   "${homeController.overallAttendancePercentage.value.toStringAsFixed(1)}%",
@@ -244,21 +367,22 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                                 barRadius: Radius.circular(10.r),
                                 backgroundColor: Colors.white,
                                 progressColor: homeController
-                                            .overallAttendancePercentage
-                                            .value >=
-                                        75
+                                    .overallAttendancePercentage
+                                    .value >=
+                                    75
                                     ? Colors.green
                                     : homeController.overallAttendancePercentage
-                                                .value >=
-                                            65
-                                        ? Colors.red
-                                        : Colors.red.shade900,
+                                    .value >=
+                                    50
+                                    ? Colors.orange
+                                    : Colors.red.shade700,
                               ),
                             ),
                           ],
                         ),
                       ],
-                    ),
+                    ),),
+
                   ],
                 ),
               ],
@@ -500,4 +624,6 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
       ),
     );
   }
+
 }
+
