@@ -104,11 +104,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           buildSettingsOption(Icons.security, 'Terms & Conditions', () {
             Get.to(() => const TermsConditionsScreen());
           }),
-
-          // Delete Account Option
-          buildSettingsOption(Icons.delete, 'Delete Account', () {
-            _confirmDeleteAccount();
-          }, isDestructive: true),
         ],
       ),
     );
@@ -142,30 +137,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       "Rate Us",
       "Redirecting to app store...",
       snackPosition: SnackPosition.BOTTOM,
-    );
-  }
-
-  void _confirmDeleteAccount() {
-    Get.defaultDialog(
-      contentPadding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 10.h),
-      title: "Delete Account",
-      titlePadding: EdgeInsets.only(top: 15.h),
-      middleText:
-          "Are you sure you want to delete your account? This action cannot be undone.",
-      textCancel: "Cancel",
-      textConfirm: "Delete",
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.red,
-      backgroundColor: AppColor.appBackGroundColor,
-      onConfirm: () async {
-        // await authController.deleteUser(homeController.currentStudent.value.uid);
-        Get.back();
-        Get.snackbar(
-          "Account Deleted",
-          "Your account has been successfully deleted",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      },
     );
   }
 }

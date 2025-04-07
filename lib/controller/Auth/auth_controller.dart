@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:college_project/models/faculty_model.dart';
 import 'package:college_project/models/student_model.dart';
@@ -8,6 +9,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../views/screens/administrator_screens/home/admin_home_screen.dart';
 import '../../views/screens/auth_screen/student_auth_screen/student_login_screen.dart';
 import '../../views/screens/auth_screen/student_auth_screen/student_registration_screen.dart';
@@ -95,21 +97,21 @@ class AuthController extends GetxController {
 
       if (["phoneNumber", "firstName", "lastName", "surName"].contains(field)) {
         final studentFuture =
-        dbRefStudent.orderByChild(field).equalTo(upperCaseValue).get();
+            dbRefStudent.orderByChild(field).equalTo(upperCaseValue).get();
         final facultyFuture =
-        dbRefFaculty.orderByChild(field).equalTo(upperCaseValue).get();
+            dbRefFaculty.orderByChild(field).equalTo(upperCaseValue).get();
         final adminFuture =
-        dbRefAdmin.orderByChild(field).equalTo(upperCaseValue).get();
+            dbRefAdmin.orderByChild(field).equalTo(upperCaseValue).get();
 
         final results =
-        await Future.wait([studentFuture, facultyFuture, adminFuture]);
+            await Future.wait([studentFuture, facultyFuture, adminFuture]);
         return results.any((snapshot) => snapshot.exists);
       }
 
       // If checking spid → Only check in students collection
       else if (field == "spid") {
         final studentSnapshot =
-        await dbRefStudent.orderByChild(field).equalTo(value).get();
+            await dbRefStudent.orderByChild(field).equalTo(value).get();
         return studentSnapshot.exists;
       }
 
@@ -328,7 +330,8 @@ class AuthController extends GetxController {
     try {
       await FirebaseAuth.instance.signOut();
 
-      var facultyQuery = dbRefFaculty.orderByChild('email').equalTo(email.toLowerCase());
+      var facultyQuery =
+          dbRefFaculty.orderByChild('email').equalTo(email.toLowerCase());
       DatabaseEvent facultyEvent = await facultyQuery.once();
 
       if (facultyEvent.snapshot.exists) {
@@ -369,14 +372,15 @@ class AuthController extends GetxController {
     try {
       await FirebaseAuth.instance.signOut();
 
-      var adminQuery = dbRefAdmin.orderByChild('email').equalTo(email.toLowerCase());
+      var adminQuery =
+          dbRefAdmin.orderByChild('email').equalTo(email.toLowerCase());
       DatabaseEvent adminEvent = await adminQuery.once();
 
       print("Admin Data: ${adminEvent.snapshot.value}"); // Debugging Line
 
       if (adminEvent.snapshot.exists) {
         Map<dynamic, dynamic> adminData =
-        adminEvent.snapshot.value as Map<dynamic, dynamic>;
+            adminEvent.snapshot.value as Map<dynamic, dynamic>;
         Map<dynamic, dynamic> admin = adminData.values.first;
 
         if (admin['phoneNumber'].toString() == phoneNumber.trim()) {
@@ -391,7 +395,8 @@ class AuthController extends GetxController {
             await Get.offAll(() => AdminHomeScreen());
             Get.snackbar("Welcome", "Login Successful!");
           } else {
-            Get.snackbar("Error", "Please verify your email before logging in.");
+            Get.snackbar(
+                "Error", "Please verify your email before logging in.");
           }
         } else {
           Get.snackbar("Login Error", "Incorrect phone number.");
@@ -406,7 +411,6 @@ class AuthController extends GetxController {
     }
   }
 
-
   Future<void> logoutUser() async {
     await FirebaseAuth.instance.signOut();
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -415,7 +419,7 @@ class AuthController extends GetxController {
     email.value = "";
     emailController.clear();
     isVerified.value = false;
-    canResend.value=false;
+    canResend.value = false;
 
     Get.offAll(() => const StudentLoginScreen());
   }
