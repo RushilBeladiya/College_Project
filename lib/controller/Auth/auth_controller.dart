@@ -472,4 +472,53 @@ class AuthController extends GetxController {
           snackPosition: SnackPosition.BOTTOM);
     }
   }
+
+  Future<void> deleteFacultyUser(String uid) async {
+    try {
+      // Delete from Realtime Database first
+      await dbRefFaculty.child(uid).remove();
+
+      // Get the user from Firebase Auth
+      User? user = FirebaseAuth.instance.currentUser;
+
+      // Re-authenticate if needed (this might be necessary for security-sensitive operations)
+      if (user != null && user.uid == uid) {
+        await user.delete();
+      }
+
+      Get.snackbar("Success", "Faculty deleted successfully",
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar("Error", "Failed to delete faculty: $e",
+          snackPosition: SnackPosition.BOTTOM);
+      throw e; // Re-throw to handle in the UI
+    }
+  }
+
+  Future<void> deleteStudentUser(String uid, String email, String spid) async {
+    try {
+      // First sign in as the student to be able to delete their auth account
+      UserCredential userCredential = await auth.signInWithEmailAndPassword(
+        email: email,
+        password: spid,
+      );
+
+      // Delete from Realtime Database
+      await dbRefStudent.child(uid).remove();
+
+      // Delete the authentication account
+      await userCredential.user?.delete();
+
+      Get.snackbar("Success", "Student deleted successfully",
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar("Error", "Failed to delete student: $e",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+      throw e;
+    }
+  }
 }

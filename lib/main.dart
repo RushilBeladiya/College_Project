@@ -1,3 +1,4 @@
+import 'package:college_project/controller/Administrator/home/admin_home_controller.dart';
 import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/controller/main/network_controller.dart';
 import 'package:college_project/core/utils/colors.dart';
@@ -22,6 +23,7 @@ void main() async {
   Get.put(NetworkController());
   Get.put(AuthController());
   Get.put(DateTimeController());
+  Get.lazyPut<AdminHomeController>(() => AdminHomeController(), fenix: true);
 
   runApp(const MyApp());
 }

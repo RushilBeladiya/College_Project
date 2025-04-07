@@ -1,4 +1,3 @@
-import 'package:college_project/controller/Administrator/settings/security_settings_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -13,8 +12,10 @@ class SecuritySettingsScreen extends StatefulWidget {
 }
 
 class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
-  final SecuritySettingsController controller =
-      Get.put(SecuritySettingsController());
+  bool isTwoFactorEnabled = false;
+  bool isBiometricEnabled = false;
+  bool isAutoLockEnabled = false;
+  double autoLockTime = 5;
 
   @override
   Widget build(BuildContext context) {
@@ -36,69 +37,88 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
             icon: Icons.verified_user,
             title: "Two-Factor Authentication",
             subtitle: "Add extra security to your account",
-            trailing: Obx(() => Switch(
-                  value: controller.isTwoFactorEnabled.value,
-                  onChanged: (value) => controller.toggleTwoFactor(value),
-                  activeColor: AppColor.primaryColor,
-                )),
-            onTap: () => controller
-                .toggleTwoFactor(!controller.isTwoFactorEnabled.value),
+            trailing: Switch(
+              value: isTwoFactorEnabled,
+              onChanged: (value) {
+                setState(() {
+                  isTwoFactorEnabled = value;
+                });
+              },
+              activeColor: AppColor.primaryColor,
+            ),
+            onTap: () {
+              setState(() {
+                isTwoFactorEnabled = !isTwoFactorEnabled;
+              });
+            },
           ),
-          Obx(() => _buildSecurityOption(
-                icon: Icons.fingerprint,
-                title: "Biometric Authentication",
-                subtitle: controller.biometricMessage.value,
-                trailing: Switch(
-                  value: controller.isBiometricEnabled.value,
-                  onChanged: controller.isBiometricAvailable.value &&
-                          controller.availableBiometrics.isNotEmpty
-                      ? (value) => controller.toggleBiometric(value)
-                      : null,
-                  activeColor: AppColor.primaryColor,
-                ),
-                onTap: () => controller.isBiometricAvailable.value &&
-                        controller.availableBiometrics.isNotEmpty
-                    ? controller
-                        .toggleBiometric(!controller.isBiometricEnabled.value)
-                    : null,
-              )),
-          Obx(() => _buildSecurityOption(
-                icon: Icons.timer,
-                title: "Auto Lock",
-                subtitle: "Lock app after inactivity",
-                trailing: Switch(
-                  value: controller.isAutoLockEnabled.value,
-                  onChanged: (value) => controller.toggleAutoLock(value),
-                  activeColor: AppColor.primaryColor,
-                ),
-                onTap: () => controller
-                    .toggleAutoLock(!controller.isAutoLockEnabled.value),
-              )),
-          Obx(() => controller.isAutoLockEnabled.value
-              ? Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Auto Lock Time: ${controller.autoLockTime.value} minute${controller.autoLockTime.value > 1 ? 's' : ''}',
-                        style: TextStyle(fontSize: 14.sp),
-                      ),
-                      Slider(
-                        value: controller.autoLockTime.value.toDouble(),
-                        min: 1,
-                        max: 10,
-                        divisions: 9,
-                        label:
-                            '${controller.autoLockTime.value} minute${controller.autoLockTime.value > 1 ? 's' : ''}',
-                        onChanged: (value) =>
-                            controller.setAutoLockTime(value.toInt()),
-                        activeColor: AppColor.primaryColor,
-                      ),
-                    ],
+          _buildSecurityOption(
+            icon: Icons.fingerprint,
+            title: "Biometric Authentication",
+            subtitle: isBiometricEnabled
+                ? "Enabled"
+                : "Enable fingerprint or face unlock",
+            trailing: Switch(
+              value: isBiometricEnabled,
+              onChanged: (value) {
+                setState(() {
+                  isBiometricEnabled = value;
+                });
+              },
+              activeColor: AppColor.primaryColor,
+            ),
+            onTap: () {
+              setState(() {
+                isBiometricEnabled = !isBiometricEnabled;
+              });
+            },
+          ),
+          _buildSecurityOption(
+            icon: Icons.timer,
+            title: "Auto Lock",
+            subtitle: "Lock app after inactivity",
+            trailing: Switch(
+              value: isAutoLockEnabled,
+              onChanged: (value) {
+                setState(() {
+                  isAutoLockEnabled = value;
+                });
+              },
+              activeColor: AppColor.primaryColor,
+            ),
+            onTap: () {
+              setState(() {
+                isAutoLockEnabled = !isAutoLockEnabled;
+              });
+            },
+          ),
+          if (isAutoLockEnabled)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Auto Lock Time: ${autoLockTime.toInt()} minute${autoLockTime > 1 ? 's' : ''}',
+                    style: TextStyle(fontSize: 14.sp),
                   ),
-                )
-              : SizedBox()),
+                  Slider(
+                    value: autoLockTime,
+                    min: 1,
+                    max: 10,
+                    divisions: 9,
+                    label:
+                        '${autoLockTime.toInt()} minute${autoLockTime > 1 ? 's' : ''}',
+                    onChanged: (value) {
+                      setState(() {
+                        autoLockTime = value;
+                      });
+                    },
+                    activeColor: AppColor.primaryColor,
+                  ),
+                ],
+              ),
+            ),
           _buildSecurityOption(
             icon: Icons.devices,
             title: "Manage Devices",

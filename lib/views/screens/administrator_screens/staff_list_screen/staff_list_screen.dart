@@ -1,7 +1,7 @@
-import 'package:college_project/controller/Administrator/home/admin_home_controller.dart';
 import 'package:college_project/core/utils/colors.dart';
 import 'package:college_project/models/faculty_model.dart';
 import 'package:college_project/views/screens/administrator_screens/staff_list_screen/staff_detail_screen.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -16,19 +16,12 @@ class StaffListScreen extends StatefulWidget {
 }
 
 class _StaffListScreenState extends State<StaffListScreen> {
-  final AdminHomeController adminHomeController = Get.find();
   final searchController = TextEditingController();
   final _searchQuery = ''.obs;
 
   @override
   void initState() {
     super.initState();
-    fetchData();
-  }
-
-  void fetchData() async {
-    await adminHomeController.fetchFacultyData();
-    setState(() {});
   }
 
   void searchStaff(String query) {
@@ -76,137 +69,150 @@ class _StaffListScreenState extends State<StaffListScreen> {
             ),
           ),
           Expanded(
-            child: Obx(() {
-              if (adminHomeController.isLoading.value) {
-                return _buildShimmerEffect();
-              }
+            child: StreamBuilder<DatabaseEvent>(
+              stream: FirebaseDatabase.instance.ref().child('faculty').onValue,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return _buildShimmerEffect();
+                }
 
-              if (adminHomeController.facultyList.isEmpty) {
-                return const Center(
-                  child: Text(
-                    "No Faculty Data Available",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                if (!snapshot.hasData ||
+                    snapshot.data?.snapshot.value == null) {
+                  return const Center(
+                    child: Text(
+                      "No Faculty Data Available",
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
                     ),
-                  ),
-                );
-              }
+                  );
+                }
 
-              final filteredList =
-                  adminHomeController.facultyList.where((faculty) {
-                final fullName =
-                    "${faculty.firstName} ${faculty.lastName}".toLowerCase();
-                return fullName.contains(_searchQuery.value.toLowerCase());
-              }).toList();
+                // Convert the database snapshot to List<FacultyModel>
+                final Map<dynamic, dynamic> data =
+                    snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                final List<FacultyModel> facultyList = data.entries
+                    .map((e) =>
+                        FacultyModel.fromJson({...e.value, 'uid': e.key}))
+                    .toList();
 
-              return RefreshIndicator(
-                backgroundColor: Colors.white,
-                color: AppColor.primaryColor,
-                onRefresh: () async {
-                  await adminHomeController.fetchFacultyData();
-                },
-                child: AnimationLimiter(
-                  child: ListView.builder(
-                    itemCount: filteredList.length,
-                    padding:
-                        EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
-                    itemBuilder: (context, index) {
-                      FacultyModel faculty = filteredList[index];
-                      bool isHighlighted = _searchQuery.value.isNotEmpty &&
-                          "${faculty.firstName} ${faculty.lastName}"
-                              .toLowerCase()
-                              .contains(_searchQuery.value.toLowerCase());
+                // Filter the list based on search query
+                final filteredList = facultyList.where((faculty) {
+                  final fullName =
+                      "${faculty.firstName} ${faculty.lastName}".toLowerCase();
+                  return fullName.contains(_searchQuery.value.toLowerCase());
+                }).toList();
 
-                      return AnimationConfiguration.staggeredList(
-                        position: index,
-                        duration: const Duration(milliseconds: 500),
-                        child: SlideAnimation(
-                          verticalOffset: 50.0,
-                          child: FadeInAnimation(
-                            child: Card(
-                              color: Colors.white,
-                              elevation: 4,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.r),
-                                side: BorderSide(
-                                  color: isHighlighted
-                                      ? AppColor.primaryColor
-                                      : Colors.transparent,
-                                  width: isHighlighted ? 2 : 1,
+                return RefreshIndicator(
+                  backgroundColor: Colors.white,
+                  color: AppColor.primaryColor,
+                  onRefresh: () async {
+                    await Future.delayed(Duration(seconds: 1));
+                  },
+                  child: AnimationLimiter(
+                    child: ListView.builder(
+                      itemCount: filteredList.length,
+                      padding: EdgeInsets.symmetric(
+                          vertical: 10.h, horizontal: 16.w),
+                      itemBuilder: (context, index) {
+                        FacultyModel faculty = filteredList[index];
+                        bool isHighlighted = _searchQuery.value.isNotEmpty &&
+                            "${faculty.firstName} ${faculty.lastName}"
+                                .toLowerCase()
+                                .contains(_searchQuery.value.toLowerCase());
+
+                        return AnimationConfiguration.staggeredList(
+                          position: index,
+                          duration: const Duration(milliseconds: 500),
+                          child: SlideAnimation(
+                            verticalOffset: 50.0,
+                            child: FadeInAnimation(
+                              child: Card(
+                                color: Colors.white,
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  side: BorderSide(
+                                    color: isHighlighted
+                                        ? AppColor.primaryColor
+                                        : Colors.transparent,
+                                    width: isHighlighted ? 2 : 1,
+                                  ),
                                 ),
-                              ),
-                              margin: EdgeInsets.symmetric(vertical: 10.h),
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 12.h, horizontal: 16.w),
-                                child: Row(
-                                  children: [
-                                    // Profile Image
-                                    CircleAvatar(
-                                      radius: 40.r,
-                                      backgroundColor: AppColor.greyColor,
-                                      backgroundImage: faculty
-                                              .profileImageUrl.isNotEmpty
-                                          ? NetworkImage(
-                                              faculty.profileImageUrl)
-                                          : const AssetImage(
-                                                  "assets/dashboard/user.png")
-                                              as ImageProvider,
-                                    ),
-                                    SizedBox(width: 15.w),
-
-                                    // Faculty Details
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "${faculty.firstName.toUpperCase()} ${faculty.lastName.toUpperCase()} ${faculty.surName.toUpperCase()}",
-                                            style: TextStyle(
-                                              fontSize: 18.sp,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColor.primaryColor,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          SizedBox(height: 5.h),
-                                          Text(
-                                            faculty.position,
-                                            style: TextStyle(
-                                              fontSize: 14.sp,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                        ],
+                                margin: EdgeInsets.symmetric(vertical: 10.h),
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 12.h, horizontal: 16.w),
+                                  child: Row(
+                                    children: [
+                                      // Profile Image
+                                      CircleAvatar(
+                                        radius: 40.r,
+                                        backgroundColor: AppColor.greyColor,
+                                        backgroundImage: faculty
+                                                .profileImageUrl.isNotEmpty
+                                            ? NetworkImage(
+                                                faculty.profileImageUrl)
+                                            : const AssetImage(
+                                                    "assets/dashboard/user.png")
+                                                as ImageProvider,
                                       ),
-                                    ),
+                                      SizedBox(width: 15.w),
 
-                                    // Navigation Icon
-                                    IconButton(
-                                      icon: const Icon(
-                                          Icons.arrow_forward_ios_rounded),
-                                      color: Colors.grey,
-                                      onPressed: () {
-                                        Get.to(
-                                          () => StaffDetailScreen(faculty),
-                                          transition: Transition.rightToLeft,
-                                        );
-                                      },
-                                    ),
-                                  ],
+                                      // Faculty Details
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "${faculty.firstName.toUpperCase()} ${faculty.lastName.toUpperCase()} ${faculty.surName.toUpperCase()}",
+                                              style: TextStyle(
+                                                fontSize: 18.sp,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppColor.primaryColor,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            SizedBox(height: 5.h),
+                                            Text(
+                                              faculty.position,
+                                              style: TextStyle(
+                                                fontSize: 14.sp,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      // Navigation Icon
+                                      IconButton(
+                                        icon: const Icon(
+                                            Icons.arrow_forward_ios_rounded),
+                                        color: Colors.grey,
+                                        onPressed: () {
+                                          Get.to(
+                                            () => StaffDetailScreen(faculty),
+                                            transition: Transition.rightToLeft,
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                ),
-              );
-            }),
+                );
+              },
+            ),
           ),
         ],
       ),

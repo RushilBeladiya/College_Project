@@ -1,9 +1,13 @@
+import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/core/utils/colors.dart';
+import 'package:college_project/models/student_model.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class StudentDetailScreen extends StatelessWidget {
-  final Map<String, dynamic> student;
-  StudentDetailScreen(this.student);
+  final StudentModel student;
+  StudentDetailScreen(Map<String, dynamic> studentData)
+      : student = StudentModel.fromMap(studentData);
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +24,16 @@ class StudentDetailScreen extends StatelessWidget {
           "Student Details",
           style: TextStyle(color: Colors.white),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.edit, color: Colors.white),
+            onPressed: () => _showEditDialog(context),
+          ),
+          IconButton(
+            icon: Icon(Icons.delete, color: Colors.white),
+            onPressed: () => _showDeleteConfirmation(context),
+          ),
+        ],
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: SafeArea(
@@ -48,9 +62,9 @@ class StudentDetailScreen extends StatelessWidget {
                       width: 100,
                       height: 100,
                       child: ClipOval(
-                        child: student['profileImageUrl'] != null
+                        child: student.profileImageUrl != null
                             ? Image.network(
-                                student['profileImageUrl'],
+                                student.profileImageUrl!,
                                 fit: BoxFit.cover,
                                 width: 100,
                                 height: 100,
@@ -77,7 +91,7 @@ class StudentDetailScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 16),
                     Text(
-                      "${student['firstName']} ${student['lastName']}",
+                      "${student.firstName} ${student.lastName}",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,
@@ -86,7 +100,7 @@ class StudentDetailScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      "SPID: ${student['spid']}",
+                      "SPID: ${student.spid}",
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
                         fontSize: 16,
@@ -104,26 +118,235 @@ class StudentDetailScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     _buildDetailRow(Icons.person, "Full Name",
-                        "${student['firstName']} ${student['lastName']} ${student['surName']}"),
+                        "${student.firstName} ${student.lastName} ${student.surName}"),
+                    _buildDivider(),
+                    _buildDetailRow(Icons.phone, "Phone", student.phoneNumber),
+                    _buildDivider(),
+                    _buildDetailRow(Icons.email, "Email", student.email),
+                    _buildDivider(),
+                    _buildDetailRow(Icons.school, "Stream", student.stream),
                     _buildDivider(),
                     _buildDetailRow(
-                        Icons.phone, "Phone", student['phoneNumber']),
+                        Icons.calendar_today, "Semester", student.semester),
                     _buildDivider(),
-                    _buildDetailRow(Icons.email, "Email", student['email']),
-                    _buildDivider(),
-                    _buildDetailRow(Icons.school, "Stream", student['stream']),
-                    _buildDivider(),
-                    _buildDetailRow(
-                        Icons.calendar_today, "Semester", student['semester']),
-                    _buildDivider(),
-                    _buildDetailRow(
-                        Icons.group, "Division", student['division']),
+                    _buildDetailRow(Icons.group, "Division", student.division),
                   ],
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showEditDialog(BuildContext context) {
+    final primaryColor = AppColor.primaryColor;
+    final backgroundColor = AppColor.appBackGroundColor;
+
+    final TextEditingController firstNameController =
+        TextEditingController(text: student.firstName);
+    final TextEditingController lastNameController =
+        TextEditingController(text: student.lastName);
+    final TextEditingController surNameController =
+        TextEditingController(text: student.surName);
+    final TextEditingController phoneController =
+        TextEditingController(text: student.phoneNumber);
+    String selectedStream = student.stream;
+    String selectedSemester = student.semester;
+    String selectedDivision = student.division;
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          padding: EdgeInsets.all(20),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Edit Student Details',
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                SizedBox(height: 20),
+                _buildEditTextField(
+                  controller: firstNameController,
+                  label: 'First Name',
+                  icon: Icons.person,
+                ),
+                SizedBox(height: 10),
+                _buildEditTextField(
+                  controller: lastNameController,
+                  label: 'Last Name',
+                  icon: Icons.person_outline,
+                ),
+                SizedBox(height: 10),
+                _buildEditTextField(
+                  controller: surNameController,
+                  label: 'Surname',
+                  icon: Icons.person_outline,
+                ),
+                SizedBox(height: 10),
+                _buildEditTextField(
+                  controller: phoneController,
+                  label: 'Phone',
+                  icon: Icons.phone,
+                  keyboardType: TextInputType.phone,
+                ),
+                SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: selectedStream,
+                  decoration: InputDecoration(labelText: 'Stream'),
+                  items: ["Computer", "IT", "Mechanical", "Civil", "Chemical"]
+                      .map((String stream) {
+                    return DropdownMenuItem<String>(
+                      value: stream,
+                      child: Text(stream),
+                    );
+                  }).toList(),
+                  onChanged: (value) => selectedStream = value!,
+                ),
+                SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: selectedSemester,
+                  decoration: InputDecoration(labelText: 'Semester'),
+                  items: ["1", "2", "3", "4", "5", "6", "7", "8"]
+                      .map((String semester) {
+                    return DropdownMenuItem<String>(
+                      value: semester,
+                      child: Text(semester),
+                    );
+                  }).toList(),
+                  onChanged: (value) => selectedSemester = value!,
+                ),
+                SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: selectedDivision,
+                  decoration: InputDecoration(labelText: 'Division'),
+                  items: ["A", "B", "C", "D"].map((String division) {
+                    return DropdownMenuItem<String>(
+                      value: division,
+                      child: Text(division),
+                    );
+                  }).toList(),
+                  onChanged: (value) => selectedDivision = value!,
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        try {
+                          await student.updateStudent({
+                            'firstName': firstNameController.text.toUpperCase(),
+                            'lastName': lastNameController.text.toUpperCase(),
+                            'surName': surNameController.text.toUpperCase(),
+                            'phoneNumber': phoneController.text,
+                            'stream': selectedStream,
+                            'semester': selectedSemester,
+                            'division': selectedDivision,
+                          });
+
+                          Navigator.pop(context);
+                          Get.back(); // Return to previous screen
+                          Get.snackbar(
+                            'Success',
+                            'Student details updated successfully',
+                            backgroundColor: Colors.green,
+                            colorText: Colors.white,
+                          );
+                        } catch (e) {
+                          Get.snackbar(
+                            'Error',
+                            'Failed to update student details: ${e.toString()}',
+                            backgroundColor: Colors.red,
+                            colorText: Colors.white,
+                          );
+                        }
+                      },
+                      child: Text('Update'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Student'),
+        content: Text('Are you sure you want to delete this student?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              try {
+                Get.dialog(
+                  Center(child: CircularProgressIndicator()),
+                  barrierDismissible: false,
+                );
+
+                await AuthController.instance.deleteStudentUser(
+                  student.uid,
+                  student.email,
+                  student.spid,
+                );
+
+                Get.back(); // Close loading
+                Get.back(); // Close confirmation
+                Get.back(); // Close detail screen
+
+                Get.snackbar(
+                  'Success',
+                  'Student deleted successfully',
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                );
+              } catch (e) {
+                Get.back(); // Close loading
+                Get.snackbar(
+                  'Error',
+                  'Failed to delete student: ${e.toString()}',
+                  backgroundColor: Colors.red,
+                  colorText: Colors.white,
+                );
+              }
+            },
+            child: Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(),
       ),
     );
   }

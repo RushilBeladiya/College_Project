@@ -51,7 +51,7 @@ class FacultyModel {
   Future<void> updateFaculty(Map<String, dynamic> updatedData) async {
     try {
       final databaseRef = FirebaseDatabase.instance.ref();
-      await databaseRef.child('faculties').child(uid).update(updatedData);
+      await databaseRef.child('faculty').child(uid).update(updatedData);
     } catch (e) {
       print('Error updating faculty: $e');
       rethrow;
@@ -61,7 +61,7 @@ class FacultyModel {
   Future<void> deleteFaculty() async {
     try {
       final databaseRef = FirebaseDatabase.instance.ref();
-      await databaseRef.child('faculties').child(uid).remove();
+      await databaseRef.child('faculty').child(uid).remove();
 
       // Delete user from Authentication
       final auth = FirebaseAuth.instance;
