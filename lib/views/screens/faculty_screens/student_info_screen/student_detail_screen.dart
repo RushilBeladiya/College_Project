@@ -1,13 +1,13 @@
 import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/core/utils/colors.dart';
 import 'package:college_project/models/student_model.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class StudentDetailScreen extends StatelessWidget {
   final StudentModel student;
-  StudentDetailScreen(Map<String, dynamic> studentData)
-      : student = StudentModel.fromMap(studentData);
+  StudentDetailScreen(this.student);
 
   @override
   Widget build(BuildContext context) {
@@ -15,128 +15,153 @@ class StudentDetailScreen extends StatelessWidget {
     final secondaryColor = primaryColor.withOpacity(0.6);
     final backgroundColor = AppColor.appBackGroundColor;
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: primaryColor,
-        elevation: 0,
-        title: Text(
-          "Student Details",
-          style: TextStyle(color: Colors.white),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit, color: Colors.white),
-            onPressed: () => _showEditDialog(context),
-          ),
-          IconButton(
-            icon: Icon(Icons.delete, color: Colors.white),
-            onPressed: () => _showDeleteConfirmation(context),
-          ),
-        ],
-        iconTheme: IconThemeData(color: Colors.white),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Profile Header (non-scrollable)
-            Container(
-              height: 260,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [primaryColor, secondaryColor],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
+    return StreamBuilder<DatabaseEvent>(
+      stream: FirebaseDatabase.instance
+          .ref()
+          .child('student')
+          .child(student.uid)
+          .onValue,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Scaffold(
+            backgroundColor: backgroundColor,
+            appBar: AppBar(
+              backgroundColor: primaryColor,
+              title: Text("Student Details",
+                  style: TextStyle(color: Colors.white)),
+            ),
+            body: Center(
+              child: CircularProgressIndicator(color: primaryColor),
+            ),
+          );
+        }
+
+        return Scaffold(
+          backgroundColor: backgroundColor,
+          appBar: AppBar(
+            backgroundColor: primaryColor,
+            elevation: 0,
+            title: Text(
+              "Student Details",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 100,
-                      child: ClipOval(
-                        child: student.profileImageUrl != null
-                            ? Image.network(
-                                student.profileImageUrl!,
-                                fit: BoxFit.cover,
-                                width: 100,
-                                height: 100,
-                                loadingBuilder:
-                                    (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Center(
-                                    child: CircularProgressIndicator(
-                                        color: Colors.white),
-                                  );
-                                },
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Image.asset(
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(Icons.edit, color: Colors.white),
+                onPressed: () => _showEditDialog(context),
+              ),
+              IconButton(
+                icon: Icon(Icons.delete, color: Colors.white),
+                onPressed: () => _showDeleteConfirmation(context),
+              ),
+            ],
+            iconTheme: IconThemeData(color: Colors.white),
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                Container(
+                  height: 260,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [primaryColor, secondaryColor],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 100,
+                          child: ClipOval(
+                            child: student.profileImageUrl != null
+                                ? Image.network(
+                                    student.profileImageUrl!,
+                                    fit: BoxFit.cover,
+                                    width: 100,
+                                    height: 100,
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                            color: Colors.white),
+                                      );
+                                    },
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Image.asset(
+                                        'assets/college_image/avatar.png',
+                                        fit: BoxFit.cover,
+                                      );
+                                    },
+                                  )
+                                : Image.asset(
                                     'assets/college_image/avatar.png',
                                     fit: BoxFit.cover,
-                                  );
-                                },
-                              )
-                            : Image.asset(
-                                'assets/college_image/avatar.png',
-                                fit: BoxFit.cover,
-                              ),
-                      ),
+                                  ),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          "${student.firstName} ${student.lastName}",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          "SPID: ${student.spid}",
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 16),
-                    Text(
-                      "${student.firstName} ${student.lastName}",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "SPID: ${student.spid}",
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-
-            // Scrollable Student Details Section
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  children: [
-                    _buildDetailRow(Icons.person, "Full Name",
-                        "${student.firstName} ${student.lastName} ${student.surName}"),
-                    _buildDivider(),
-                    _buildDetailRow(Icons.phone, "Phone", student.phoneNumber),
-                    _buildDivider(),
-                    _buildDetailRow(Icons.email, "Email", student.email),
-                    _buildDivider(),
-                    _buildDetailRow(Icons.school, "Stream", student.stream),
-                    _buildDivider(),
-                    _buildDetailRow(
-                        Icons.calendar_today, "Semester", student.semester),
-                    _buildDivider(),
-                    _buildDetailRow(Icons.group, "Division", student.division),
-                  ],
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      children: [
+                        _buildDetailRow(Icons.person, "Full Name",
+                            "${student.firstName} ${student.lastName} ${student.surName}"),
+                        _buildDivider(),
+                        _buildDetailRow(
+                            Icons.phone, "Phone", student.phoneNumber),
+                        _buildDivider(),
+                        _buildDetailRow(Icons.email, "Email", student.email),
+                        _buildDivider(),
+                        _buildDetailRow(Icons.school, "Stream", student.stream),
+                        _buildDivider(),
+                        _buildDetailRow(
+                            Icons.calendar_today, "Semester", student.semester),
+                        _buildDivider(),
+                        _buildDetailRow(
+                            Icons.group, "Division", student.division),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -152,9 +177,36 @@ class StudentDetailScreen extends StatelessWidget {
         TextEditingController(text: student.surName);
     final TextEditingController phoneController =
         TextEditingController(text: student.phoneNumber);
+
+    // Initialize dropdown values with current student values
     String selectedStream = student.stream;
     String selectedSemester = student.semester;
     String selectedDivision = student.division;
+
+    // Define dropdown options
+    final List<String> streamOptions = ["BCA", "BCOM", "BBA"];
+    final List<String> semesterOptions = [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8"
+    ];
+    final List<String> divisionOptions = ["A", "B", "C", "D"];
+
+    // Validate that current values exist in options
+    if (!streamOptions.contains(selectedStream)) {
+      selectedStream = streamOptions.first;
+    }
+    if (!semesterOptions.contains(selectedSemester)) {
+      selectedSemester = semesterOptions.first;
+    }
+    if (!divisionOptions.contains(selectedDivision)) {
+      selectedDivision = divisionOptions.first;
+    }
 
     showDialog(
       context: context,
@@ -197,9 +249,11 @@ class StudentDetailScreen extends StatelessWidget {
                 SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: selectedStream,
-                  decoration: InputDecoration(labelText: 'Stream'),
-                  items: ["Computer", "IT", "Mechanical", "Civil", "Chemical"]
-                      .map((String stream) {
+                  decoration: InputDecoration(
+                    labelText: 'Stream',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: streamOptions.map((String stream) {
                     return DropdownMenuItem<String>(
                       value: stream,
                       child: Text(stream),
@@ -210,9 +264,11 @@ class StudentDetailScreen extends StatelessWidget {
                 SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: selectedSemester,
-                  decoration: InputDecoration(labelText: 'Semester'),
-                  items: ["1", "2", "3", "4", "5", "6", "7", "8"]
-                      .map((String semester) {
+                  decoration: InputDecoration(
+                    labelText: 'Semester',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: semesterOptions.map((String semester) {
                     return DropdownMenuItem<String>(
                       value: semester,
                       child: Text(semester),
@@ -223,8 +279,11 @@ class StudentDetailScreen extends StatelessWidget {
                 SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: selectedDivision,
-                  decoration: InputDecoration(labelText: 'Division'),
-                  items: ["A", "B", "C", "D"].map((String division) {
+                  decoration: InputDecoration(
+                    labelText: 'Division',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: divisionOptions.map((String division) {
                     return DropdownMenuItem<String>(
                       value: division,
                       child: Text(division),
@@ -270,7 +329,11 @@ class StudentDetailScreen extends StatelessWidget {
                           );
                         }
                       },
-                      child: Text('Update'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                      ),
+                      child:
+                          Text('Update', style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
@@ -283,53 +346,93 @@ class StudentDetailScreen extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(BuildContext context) {
+    final primaryColor = AppColor.primaryColor;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delete Student'),
-        content: Text('Are you sure you want to delete this student?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel'),
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        elevation: 5,
+        child: Container(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.warning_rounded,
+                color: Colors.orange,
+                size: 50,
+              ),
+              SizedBox(height: 15),
+              Text(
+                'Delete Student',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: primaryColor,
+                ),
+              ),
+              SizedBox(height: 10),
+              Text(
+                'Are you sure you want to delete this student?',
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 25),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      try {
+                        Get.dialog(
+                          Center(
+                            child:
+                                CircularProgressIndicator(color: primaryColor),
+                          ),
+                          barrierDismissible: false,
+                        );
+
+                        await AuthController.instance.deleteStudentUser(
+                          student.uid,
+                          student.email,
+                          student.spid,
+                        );
+
+                        Get.back(); // Close loading
+                        Get.back(); // Close confirmation dialog
+                        Get.snackbar(
+                          'Success',
+                          'Student deleted successfully',
+                          backgroundColor: Colors.green,
+                          colorText: Colors.white,
+                        );
+                      } catch (e) {
+                        Get.back(); // Close loading
+                        Get.snackbar(
+                          'Error',
+                          'Failed to delete student: ${e.toString()}',
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: Text('Delete'),
+                  ),
+                ],
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () async {
-              try {
-                Get.dialog(
-                  Center(child: CircularProgressIndicator()),
-                  barrierDismissible: false,
-                );
-
-                await AuthController.instance.deleteStudentUser(
-                  student.uid,
-                  student.email,
-                  student.spid,
-                );
-
-                Get.back(); // Close loading
-                Get.back(); // Close confirmation
-                Get.back(); // Close detail screen
-
-                Get.snackbar(
-                  'Success',
-                  'Student deleted successfully',
-                  backgroundColor: Colors.green,
-                  colorText: Colors.white,
-                );
-              } catch (e) {
-                Get.back(); // Close loading
-                Get.snackbar(
-                  'Error',
-                  'Failed to delete student: ${e.toString()}',
-                  backgroundColor: Colors.red,
-                  colorText: Colors.white,
-                );
-              }
-            },
-            child: Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -345,8 +448,11 @@ class StudentDetailScreen extends StatelessWidget {
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon),
+        prefixIcon: Icon(icon, color: AppColor.primaryColor),
         border: OutlineInputBorder(),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppColor.primaryColor),
+        ),
       ),
     );
   }
