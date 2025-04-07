@@ -3,7 +3,6 @@ import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/controller/Faculty/home/faculty_home_controller.dart';
 import 'package:college_project/controller/Student/home/student_home_controller.dart';
 import 'package:college_project/core/utils/images.dart';
-import 'package:college_project/views/screens/auth_screen/student_auth_screen/student_registration_screen.dart';
 import 'package:college_project/views/screens/gallery_main_screen/gallery_main_screen.dart';
 import 'package:college_project/views/screens/student_screens/Student_lectures_view_screen.dart';
 import 'package:college_project/views/screens/student_screens/announcement_screen/student_announcement_screen.dart';
@@ -123,16 +122,6 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                       ],
                     ),
                     const Spacer(),
-                    IconButton(
-                      icon: Icon(
-                        Icons.person_pin,
-                        color: AppColor.whiteColor,
-                        size: 22.sp,
-                      ),
-                      onPressed: () async {
-                        await Get.to(() => const ProfileScreen());
-                      },
-                    ),
                     IconButton(
                       icon: Icon(
                         Icons.settings,
@@ -422,8 +411,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
               leading: Icon(Icons.person),
               title: const Text('Profile'),
               onTap: () async {
-                await Get.to(
-                    () => StudentRegistrationScreen()); // Close the drawer
+                await Get.to(() => ProfileScreen()); // Close the drawer
               },
             ),
             ListTile(

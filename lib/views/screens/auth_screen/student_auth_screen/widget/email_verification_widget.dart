@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+
 import '../../../../../controller/Auth/auth_controller.dart';
 import '../../../../../core/utils/colors.dart';
 
@@ -10,18 +11,26 @@ class EmailVerificationWidget extends StatelessWidget {
     final controller = AuthController.instance;
 
     return Obx(() {
+      // Add auto-check when widget is shown
+      if (!controller.isVerified.value && !controller.isChecking.value) {
+        controller.checkEmailVerified();
+      }
+
       // ✅ If already verified, show checkmark
       if (controller.isVerified.value) {
         return Padding(
           padding: EdgeInsets.all(8),
-          child: Icon(Icons.verified_rounded, color: AppColor.primaryColor, size: 25.sp),
+          child: Icon(Icons.verified_rounded,
+              color: AppColor.primaryColor, size: 25.sp),
         );
       }
 
       if (controller.isChecking.value) {
         return Padding(
           padding: EdgeInsets.all(15),
-          child: Center(child: CircularProgressIndicator(strokeWidth: 1.w, color: AppColor.primaryColor)),
+          child: Center(
+              child: CircularProgressIndicator(
+                  strokeWidth: 1.w, color: AppColor.primaryColor)),
         );
       }
 
@@ -53,7 +62,7 @@ class EmailVerificationWidget extends StatelessWidget {
         return FittedBox(
           fit: BoxFit.fitHeight,
           child: Padding(
-            padding:  EdgeInsets.only(right: 5.w),
+            padding: EdgeInsets.only(right: 5.w),
             child: ElevatedButton(
               onPressed: isValidEmail
                   ? () async {
@@ -67,10 +76,17 @@ class EmailVerificationWidget extends StatelessWidget {
                   : null,
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(horizontal: 15.w),
-                backgroundColor: isValidEmail ? AppColor.primaryColor : AppColor.primaryColor,
-
+                backgroundColor: isValidEmail
+                    ? AppColor.primaryColor
+                    : AppColor.primaryColor,
               ),
-              child: Text("Verify", style: TextStyle(color: AppColor.whiteColor,fontSize: 12.sp,),),
+              child: Text(
+                "Verify",
+                style: TextStyle(
+                  color: AppColor.whiteColor,
+                  fontSize: 12.sp,
+                ),
+              ),
             ),
           ),
         );

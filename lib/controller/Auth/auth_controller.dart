@@ -46,15 +46,26 @@ class AuthController extends GetxController {
     super.onClose();
   }
 
-  // @override
-  // void onInit() {
-  //   super.onInit();
-  //   // checkEmailVerified();
-  // }
-
   Future<void> checkEmailVerified() async {
-    await auth.currentUser?.reload();
-    isVerified.value = auth.currentUser?.emailVerified ?? false;
+    try {
+      isChecking.value = true;
+      // Always reload user to get fresh verification status
+      await auth.currentUser?.reload();
+      final currentUser = auth.currentUser;
+      if (currentUser != null) {
+        isVerified.value = currentUser.emailVerified;
+        // If verified, update state for UI
+        if (isVerified.value) {
+          canResend.value = false;
+          countdown.value = 0;
+          _timer?.cancel();
+        }
+      }
+    } catch (e) {
+      print("Error checking email verification: $e");
+    } finally {
+      isChecking.value = false;
+    }
   }
 
   Future<void> sendVerificationEmail() async {
@@ -62,12 +73,22 @@ class AuthController extends GetxController {
 
     isChecking.value = true;
     try {
-      await auth.currentUser?.sendEmailVerification();
-      checkEmailVerified(); // Immediately check if verified
-      if (isVerified.value) return; // If verified, stop countdown & show ✅ icon
-      canResend.value = false;
-      countdown.value = 90;
-      startCountdown();
+      final user = auth.currentUser;
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+        canResend.value = false;
+        countdown.value = 90;
+        startCountdown();
+
+        // Start periodic verification check
+        _timer?.cancel();
+        _timer = Timer.periodic(Duration(seconds: 3), (timer) async {
+          await checkEmailVerified();
+          if (isVerified.value) {
+            timer.cancel();
+          }
+        });
+      }
     } catch (e) {
       print("Error sending verification email: $e");
     } finally {
