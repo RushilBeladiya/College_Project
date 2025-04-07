@@ -1,9 +1,10 @@
 import 'package:college_project/core/utils/colors.dart';
+import 'package:college_project/models/faculty_model.dart';
 import 'package:flutter/material.dart';
 
-class StudentDetailScreen extends StatelessWidget {
-  final Map<String, dynamic> student;
-  StudentDetailScreen(this.student);
+class StaffDetailScreen extends StatelessWidget {
+  final FacultyModel faculty;
+  StaffDetailScreen(this.faculty);
 
   @override
   Widget build(BuildContext context) {
@@ -17,15 +18,14 @@ class StudentDetailScreen extends StatelessWidget {
         backgroundColor: primaryColor,
         elevation: 0,
         title: Text(
-          "Student Details",
-          style: TextStyle(color: Colors.white),
+          "Staff Details",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Profile Header (non-scrollable)
             Container(
               height: 260,
               width: double.infinity,
@@ -48,9 +48,9 @@ class StudentDetailScreen extends StatelessWidget {
                       width: 100,
                       height: 100,
                       child: ClipOval(
-                        child: student['profileImageUrl'] != null
+                        child: faculty.profileImageUrl.isNotEmpty
                             ? Image.network(
-                                student['profileImageUrl'],
+                                faculty.profileImageUrl,
                                 fit: BoxFit.cover,
                                 width: 100,
                                 height: 100,
@@ -64,20 +64,20 @@ class StudentDetailScreen extends StatelessWidget {
                                 },
                                 errorBuilder: (context, error, stackTrace) {
                                   return Image.asset(
-                                    'assets/college_image/avatar.png',
+                                    'assets/dashboard/user.png',
                                     fit: BoxFit.cover,
                                   );
                                 },
                               )
                             : Image.asset(
-                                'assets/college_image/avatar.png',
+                                'assets/dashboard/user.png',
                                 fit: BoxFit.cover,
                               ),
                       ),
                     ),
                     SizedBox(height: 16),
                     Text(
-                      "${student['firstName']} ${student['lastName']}",
+                      "${faculty.firstName} ${faculty.lastName}",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,
@@ -86,7 +86,7 @@ class StudentDetailScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      "SPID: ${student['spid']}",
+                      faculty.position,
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
                         fontSize: 16,
@@ -96,28 +96,20 @@ class StudentDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Scrollable Student Details Section
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
                     _buildDetailRow(Icons.person, "Full Name",
-                        "${student['firstName']} ${student['lastName']} ${student['surName']}"),
+                        "${faculty.firstName} ${faculty.lastName} ${faculty.surName}"),
                     _buildDivider(),
-                    _buildDetailRow(
-                        Icons.phone, "Phone", student['phoneNumber']),
+                    _buildDetailRow(Icons.phone, "Phone", faculty.phoneNumber),
                     _buildDivider(),
-                    _buildDetailRow(Icons.email, "Email", student['email']),
+                    _buildDetailRow(Icons.email, "Email", faculty.email),
                     _buildDivider(),
-                    _buildDetailRow(Icons.school, "Stream", student['stream']),
+                    _buildDetailRow(Icons.work, "Position", faculty.position),
                     _buildDivider(),
-                    _buildDetailRow(
-                        Icons.calendar_today, "Semester", student['semester']),
-                    _buildDivider(),
-                    _buildDetailRow(
-                        Icons.group, "Division", student['division']),
                   ],
                 ),
               ),

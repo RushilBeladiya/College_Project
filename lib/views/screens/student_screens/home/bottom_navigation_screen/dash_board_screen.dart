@@ -3,6 +3,7 @@ import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/controller/Faculty/home/faculty_home_controller.dart';
 import 'package:college_project/controller/Student/home/student_home_controller.dart';
 import 'package:college_project/core/utils/images.dart';
+import 'package:college_project/views/screens/administrator_screens/staff_list_screen/staff_list_screen.dart';
 import 'package:college_project/views/screens/gallery_main_screen/gallery_main_screen.dart';
 import 'package:college_project/views/screens/student_screens/Student_lectures_view_screen.dart';
 import 'package:college_project/views/screens/student_screens/announcement_screen/student_announcement_screen.dart';
@@ -22,7 +23,6 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../../controller/Auth/dateTimeController.dart';
 import '../../../../../controller/main/syllabus_controller.dart';
 import '../../../../../core/utils/colors.dart';
-import '../../../administrator_screens/staff_list_screen.dart';
 import '../../setting_screen/settings_screen.dart';
 import '../../setting_screen/webview_screen.dart';
 

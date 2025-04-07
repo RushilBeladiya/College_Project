@@ -16,8 +16,8 @@ import 'controller/Auth/dateTimeController.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await SharedPreferences.getInstance();
+  final sharedPreferences = await SharedPreferences.getInstance();
+  Get.put<SharedPreferences>(sharedPreferences);
   await Firebase.initializeApp();
   Get.put(NetworkController());
   Get.put(AuthController());

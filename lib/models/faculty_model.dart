@@ -1,3 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+
 class FacultyModel {
   String uid;
   String firstName;
@@ -43,5 +46,29 @@ class FacultyModel {
       'position': position,
       'profileImageUrl': profileImageUrl,
     };
+  }
+
+  Future<void> updateFaculty(Map<String, dynamic> updatedData) async {
+    try {
+      final databaseRef = FirebaseDatabase.instance.ref();
+      await databaseRef.child('faculties').child(uid).update(updatedData);
+    } catch (e) {
+      print('Error updating faculty: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteFaculty() async {
+    try {
+      final databaseRef = FirebaseDatabase.instance.ref();
+      await databaseRef.child('faculties').child(uid).remove();
+
+      // Delete user from Authentication
+      final auth = FirebaseAuth.instance;
+      await auth.currentUser?.delete();
+    } catch (e) {
+      print('Error deleting faculty: $e');
+      rethrow;
+    }
   }
 }

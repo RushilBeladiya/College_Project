@@ -60,7 +60,7 @@ class FacultyEventScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColor.primaryColor, // Primary-colored AppBar
         title: Text(
-          'Faculty Events',
+          'Events',
           style: TextStyle(
               color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
         ),
