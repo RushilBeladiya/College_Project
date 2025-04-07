@@ -38,7 +38,6 @@ class StudentHomeController extends GetxController {
     // print("+-+-+---+---+-+-+-+");
   }
 
-
   Future<void> _loadInitialData() async {
     try {
       // First ensure student data is loaded
@@ -53,6 +52,7 @@ class StudentHomeController extends GetxController {
       Get.snackbar("Error", "Failed to load data: ${e.toString()}");
     }
   }
+
   void updateProfileImage(String imageUrl) {
     currentStudent.update((student) {
       student?.profileImageUrl = imageUrl;
@@ -81,7 +81,6 @@ class StudentHomeController extends GetxController {
     profileImageUrl: '',
     status: '',
   ).obs;
-
 
   Future<void> fetchCurrentUserData() async {
     try {
@@ -147,7 +146,7 @@ class StudentHomeController extends GetxController {
           stream.isEmpty ||
           semester.isEmpty ||
           division.isEmpty) {
-        Get.snackbar("Error", "Student details are missing.");
+        // Get.snackbar("Error", "Student details are missing.");
         isLoading.value = false;
         return;
       }
@@ -200,9 +199,11 @@ class StudentHomeController extends GetxController {
       isLoading.value = false; // Stop loading
     }
   }
+
   Future<String> uploadImage(XFile imageFile) async {
     try {
-      String fileName = 'student/${currentStudent.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      String fileName =
+          'student/${currentStudent.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       Reference ref = storage.ref().child(fileName);
       UploadTask uploadTask = ref.putData(await imageFile.readAsBytes());
       TaskSnapshot snapshot = await uploadTask;
@@ -240,9 +241,11 @@ class StudentHomeController extends GetxController {
       rethrow;
     }
   }
+
   Future<String> uploadImageToStorage(File imageFile) async {
     try {
-      String fileName = 'student_images/${currentStudent.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      String fileName =
+          'student_images/${currentStudent.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
       await storageRef.putFile(imageFile);
       return await storageRef.getDownloadURL();

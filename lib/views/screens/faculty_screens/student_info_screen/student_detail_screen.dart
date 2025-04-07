@@ -186,15 +186,16 @@ class StudentDetailScreen extends StatelessWidget {
     // Define dropdown options
     final List<String> streamOptions = ["BCA", "BCOM", "BBA"];
     final List<String> semesterOptions = [
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8"
+      'Semester 1',
+      'Semester 2',
+      'Semester 3',
+      'Semester 4',
+      'Semester 5',
+      'Semester 6',
+      'Semester 7',
+      'Semester 8'
     ];
+
     final List<String> divisionOptions = ["A", "B", "C", "D"];
 
     // Validate that current values exist in options

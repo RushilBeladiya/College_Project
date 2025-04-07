@@ -293,7 +293,7 @@ class _StudentAttendanceViewScreenState
           stream.isEmpty ||
           semester.isEmpty ||
           division.isEmpty) {
-        Get.snackbar("Error", "Student details are missing.");
+        // Get.snackbar("Error", "Student details are missing.");
         return;
       }
 
