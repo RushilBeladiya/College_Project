@@ -2,8 +2,10 @@ import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/controller/Student/home/student_home_controller.dart';
 import 'package:college_project/core/utils/colors.dart';
 import 'package:college_project/core/utils/images.dart';
+import 'package:college_project/views/screens/student_screens/home/college_info_screen.dart';
 import 'package:college_project/views/screens/student_screens/home/contact_us_screen.dart';
-import 'package:college_project/views/screens/student_screens/setting_screen/webview_screen.dart';
+import 'package:college_project/views/screens/student_screens/setting_screen/privacy_policy_screen.dart';
+import 'package:college_project/views/screens/student_screens/setting_screen/terms_conditions_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -32,6 +34,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: ListView(
         children: [
+          // Profile Section
           Container(
             padding: EdgeInsets.symmetric(horizontal: 15.w, vertical: 10.h),
             color: AppColor.blackColor.withOpacity(0.1),
@@ -39,14 +42,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 Obx(
                   () => homeController.isLoading.value
-                      ? CircularProgressIndicator() // Show loading indicator
+                      ? CircularProgressIndicator()
                       : CircleAvatar(
                           radius: 40.r,
                           backgroundColor: AppColor.whiteColor,
                           child: CircleAvatar(
                             radius: 38.r,
-                            backgroundImage: homeController
-                                    .currentStudent.value.profileImageUrl.isNotEmpty
+                            backgroundImage: homeController.currentStudent.value
+                                    .profileImageUrl.isNotEmpty
                                 ? NetworkImage(homeController
                                     .currentStudent.value.profileImageUrl)
                                 : const AssetImage(AppImage.user)
@@ -60,7 +63,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        homeController.currentStudent.value.firstName,
+                        "${homeController.currentStudent.value.firstName} ${homeController.currentStudent.value.lastName}",
                         style: TextStyle(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
@@ -81,37 +84,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
           ),
+
+          // Settings Options
           buildSettingsOption(Icons.info, 'About Us', () {
-            Get.to(() => WebViewScreen(url: "", title: ""));
+            Get.to(() => const CollegeInfoScreen());
           }),
           buildSettingsOption(Icons.phone, 'Contact Us', () {
-            Get.to(() => ContactUsScreen());
+            Get.to(() => const ContactUsScreen());
           }),
-          buildSettingsOption(Icons.star_rate_rounded, 'Rate Us', () {}),
+          buildSettingsOption(Icons.star_rate_rounded, 'Rate Us', () {
+            _launchStoreForRating();
+          }),
           buildSettingsOption(Icons.share, 'Share App', () {
-            Share.share("Share CollegeApp");
+            Share.share("Check out this amazing college app!");
           }),
-          // if (homeController.checkAdminCredentials() == false)
-          //   buildSettingsOption(Icons.delete_forever, 'Delete Account', () {
-          //     _confirmDeleteAccount();
-          //   }),
           buildSettingsOption(Icons.lock, 'Privacy Policy', () {
-            // Get.to(() => PrivacyPolicyScreen());
+            Get.to(() => const PrivacyPolicyScreen());
           }),
           buildSettingsOption(Icons.security, 'Terms & Conditions', () {
-            Get.to(() => TermsConditionsScreen());
+            Get.to(() => const TermsConditionsScreen());
           }),
+
+          // Delete Account Option
+          buildSettingsOption(Icons.delete, 'Delete Account', () {
+            _confirmDeleteAccount();
+          }, isDestructive: true),
         ],
       ),
     );
   }
 
-  Widget buildSettingsOption(IconData icon, String title, VoidCallback onTap) {
+  Widget buildSettingsOption(IconData icon, String title, VoidCallback onTap,
+      {bool isDestructive = false}) {
     return ListTile(
       contentPadding: EdgeInsets.symmetric(vertical: 5.h, horizontal: 20.w),
       leading: Icon(
         icon,
-        color: AppColor.primaryColor,
+        color: isDestructive ? Colors.red : AppColor.primaryColor,
         size: 25.sp,
       ),
       title: Text(
@@ -119,6 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         style: TextStyle(
           fontSize: 14.sp,
           fontWeight: FontWeight.w500,
+          color: isDestructive ? Colors.red : AppColor.blackColor,
         ),
       ),
       trailing: Icon(Icons.arrow_forward_ios, size: 18.sp, color: Colors.grey),
@@ -126,7 +136,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // Method to confirm account deletion
+  void _launchStoreForRating() {
+    // Implement store rating functionality
+    Get.snackbar(
+      "Rate Us",
+      "Redirecting to app store...",
+      snackPosition: SnackPosition.BOTTOM,
+    );
+  }
+
   void _confirmDeleteAccount() {
     Get.defaultDialog(
       contentPadding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 10.h),
@@ -137,43 +155,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
       textCancel: "Cancel",
       textConfirm: "Delete",
       confirmTextColor: Colors.white,
-      buttonColor: AppColor.primaryColor,
+      buttonColor: Colors.red,
       backgroundColor: AppColor.appBackGroundColor,
       onConfirm: () async {
         // await authController.deleteUser(homeController.currentStudent.value.uid);
+        Get.back();
+        Get.snackbar(
+          "Account Deleted",
+          "Your account has been successfully deleted",
+          snackPosition: SnackPosition.BOTTOM,
+        );
       },
-    );
-  }
-}
-
-// Placeholder for About Us screen
-class AboutUsScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('About Us'),
-        backgroundColor: Colors.deepPurpleAccent,
-      ),
-      body: Center(
-        child: Text('About Us Screen'),
-      ),
-    );
-  }
-}
-
-// Placeholder for Terms and Conditions screen
-class TermsConditionsScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Terms & Conditions'),
-        backgroundColor: Colors.deepPurpleAccent,
-      ),
-      body: Center(
-        child: Text('Terms and Conditions Screen'),
-      ),
     );
   }
 }
