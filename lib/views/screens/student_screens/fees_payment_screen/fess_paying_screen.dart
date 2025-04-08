@@ -1,16 +1,14 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui';
+
 import 'package:firebase_database/firebase_database.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
-import 'package:pw/pw.dart' as pw;
+
 import '../../../../controller/Student/home/student_home_controller.dart';
 import '../../../../core/utils/colors.dart';
 
@@ -143,11 +141,11 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
       };
 
       DatabaseReference paymentRef =
-      FirebaseDatabase.instance.ref().child('paymentsComplete');
+          FirebaseDatabase.instance.ref().child('paymentsComplete');
       await paymentRef.child(response.paymentId!).set(paymentData);
 
       DatabaseReference studentRef =
-      FirebaseDatabase.instance.ref().child('student').child(student.uid);
+          FirebaseDatabase.instance.ref().child('student').child(student.uid);
       await studentRef.update({'status': 'paid'});
 
       studentHomeController.currentStudent.update((student) {
@@ -209,7 +207,7 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
     final student = studentHomeController.currentStudent.value;
 
     var options = {
-      'key': 'rzp_test_xnFqX02uZhe2DM',
+      'key': 'rzp_test_4YGQ9DJHoBw5M3',
       'amount': int.parse(_amount) * 100,
       'name': 'SASCMA',
       'description': 'Fee Payment',
@@ -376,7 +374,9 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
   Future<void> _openPdfFile(File file) async {
     try {
       if (file.existsSync()) {
-        Get.to(()=> PDFView(filePath: file.path,));
+        Get.to(() => PDFView(
+              filePath: file.path,
+            ));
         // final result = await OpenFile.open(file.path);
       }
     } catch (e) {
@@ -472,190 +472,190 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
       ),
       body: _isLoading
           ? Center(
-        child: CircularProgressIndicator(
-          valueColor:
-          AlwaysStoppedAnimation<Color>(AppColor.primaryColor),
-        ),
-      )
+              child: CircularProgressIndicator(
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(AppColor.primaryColor),
+              ),
+            )
           : SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage:
-                    NetworkImage(student.profileImageUrl),
-                    backgroundColor:
-                    AppColor.primaryColor.withOpacity(0.1),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    '${student.firstName} ${student.lastName}',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppColor.primaryColor,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'SPID: ${student.spid}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Divider(),
-                  SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildInfoItem(
-                          Icons.school, 'Stream', student.stream),
-                      _buildInfoItem(Icons.class_rounded, 'Semester',
-                          '${student.semester}-${student.division}'),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildInfoItem(Icons.email, 'Email', student.email),
-                      _buildInfoItem(
-                          Icons.phone, 'Phone', student.phoneNumber),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Payment Status',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColor.primaryColor,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  _buildStatusItem(
-                    'Amount',
-                    '₹$_amount',
-                    Icons.currency_rupee,
-                    Colors.blue,
-                  ),
-                  _buildStatusItem(
-                    'Status',
-                    _isPaid ? 'Paid' : 'Pending',
-                    _isPaid ? Icons.check_circle : Icons.pending,
-                    _isPaid ? Colors.green : Colors.orange,
-                  ),
-                  if (_isPaid && _transactionId != null)
-                    _buildStatusItem(
-                      'Transaction ID',
-                      _transactionId!,
-                      Icons.receipt,
-                      Colors.purple,
-                    ),
-                  SizedBox(height: 24),
-                  if (!_isPaid)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _openRazorpay,
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Text(
-                            'PAY NOW',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 5,
-                        ),
-                      ),
-                    ),
-                  if (_isPaid)
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _downloadAndOpenReceipt,
-                            icon: Icon(Icons.download),
-                            label: Text('Download Receipt'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColor.primaryColor,
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _viewPaymentDetails,
-                            icon: Icon(Icons.remove_red_eye),
-                            label: Text('View Details'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColor.primaryColor,
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
                         ),
                       ],
                     ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundImage:
+                              NetworkImage(student.profileImageUrl),
+                          backgroundColor:
+                              AppColor.primaryColor.withOpacity(0.1),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          '${student.firstName} ${student.lastName}',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: AppColor.primaryColor,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'SPID: ${student.spid}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Divider(),
+                        SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildInfoItem(
+                                Icons.school, 'Stream', student.stream),
+                            _buildInfoItem(Icons.class_rounded, 'Semester',
+                                '${student.semester}-${student.division}'),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildInfoItem(Icons.email, 'Email', student.email),
+                            _buildInfoItem(
+                                Icons.phone, 'Phone', student.phoneNumber),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Payment Status',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColor.primaryColor,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        _buildStatusItem(
+                          'Amount',
+                          '₹$_amount',
+                          Icons.currency_rupee,
+                          Colors.blue,
+                        ),
+                        _buildStatusItem(
+                          'Status',
+                          _isPaid ? 'Paid' : 'Pending',
+                          _isPaid ? Icons.check_circle : Icons.pending,
+                          _isPaid ? Colors.green : Colors.orange,
+                        ),
+                        if (_isPaid && _transactionId != null)
+                          _buildStatusItem(
+                            'Transaction ID',
+                            _transactionId!,
+                            Icons.receipt,
+                            Colors.purple,
+                          ),
+                        SizedBox(height: 24),
+                        if (!_isPaid)
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _openRazorpay,
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Text(
+                                  'PAY NOW',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColor.primaryColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                elevation: 5,
+                              ),
+                            ),
+                          ),
+                        if (_isPaid)
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _downloadAndOpenReceipt,
+                                  icon: Icon(Icons.download),
+                                  label: Text('Download Receipt'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColor.primaryColor,
+                                    padding: EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _viewPaymentDetails,
+                                  icon: Icon(Icons.remove_red_eye),
+                                  label: Text('View Details'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColor.primaryColor,
+                                    padding: EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
