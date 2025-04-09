@@ -1,6 +1,13 @@
+import 'dart:io';
+
+import 'package:college_project/views/screens/pdf_view_screen.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:get/get.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../core/utils/colors.dart';
 
@@ -77,17 +84,27 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: 'Select Stream',
+                labelStyle:
+                    TextStyle(color: AppColor.primaryColor), // Label color
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: AppColor.primaryColor, width: 2),
+                  borderSide: BorderSide(
+                      color: AppColor.primaryColor, width: 2), // Border color
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                      color: AppColor.primaryColor,
+                      width: 2), // Focused border color
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               value: _selectedStream,
               items: _streamSemesterMap.keys.map((String stream) {
                 return DropdownMenuItem<String>(
                   value: stream,
-                  child: Text(stream),
+                  child: Text(stream,
+                      style: TextStyle(
+                          color: AppColor.primaryColor)), // Text color
                 );
               }).toList(),
               onChanged: (String? newValue) {
@@ -106,17 +123,27 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: 'Select Semester',
+                labelStyle:
+                    TextStyle(color: AppColor.primaryColor), // Label color
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide:
-                      BorderSide(color: AppColor.primaryColor, width: 2),
+                  borderSide: BorderSide(
+                      color: AppColor.primaryColor, width: 2), // Border color
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                      color: AppColor.primaryColor,
+                      width: 2), // Focused border color
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
               value: _selectedSemester,
               items: _filteredSemesters.map((String semester) {
                 return DropdownMenuItem<String>(
                   value: semester,
-                  child: Text(semester),
+                  child: Text(semester,
+                      style: TextStyle(
+                          color: AppColor.primaryColor)), // Text color
                 );
               }).toList(),
               onChanged: (String? newValue) {
@@ -183,10 +210,7 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: ElevatedButton(
-                onPressed: () {
-                  // Handle report button action
-                  print("Report button pressed");
-                },
+                onPressed: _generatePDFReport,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColor.primaryColor,
                   padding:
@@ -307,6 +331,167 @@ class _PaymentStatusShowScreenState extends State<PaymentStatusShowScreen> {
                 ))
             .toList(),
       ),
+    );
+  }
+
+  /// Function to generate, save, and open PDF report
+  Future<void> _generatePDFReport() async {
+    final pdf = pw.Document();
+
+    // Add college logo and name
+    final logo = pw.MemoryImage(
+      (await rootBundle.load('assets/splash_icon/app_Logo.png'))
+          .buffer
+          .asUint8List(),
+    );
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Image(logo, width: 50, height: 50),
+                  pw.Text(
+                    'Your College Name',
+                    style: pw.TextStyle(
+                      fontSize: 20,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              pw.SizedBox(height: 20),
+              pw.Text(
+                'Payment Status Report',
+                style: pw.TextStyle(
+                  fontSize: 18,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              pw.SizedBox(height: 10),
+              if (_paidStudents.isNotEmpty) ...[
+                pw.Text(
+                  'Paid Students:',
+                  style: pw.TextStyle(
+                    fontSize: 16,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 5),
+                _buildTable(_paidStudents),
+                pw.SizedBox(height: 10),
+              ],
+              if (_unpaidStudents.isNotEmpty) ...[
+                pw.Text(
+                  'Unpaid Students:',
+                  style: pw.TextStyle(
+                    fontSize: 16,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 5),
+                _buildTable(_unpaidStudents),
+              ],
+            ],
+          );
+        },
+      ),
+    );
+
+    // Request storage permission
+    if (await Permission.storage.request().isGranted) {
+      try {
+        final directory = Directory('/storage/emulated/0/Download');
+        final file = File('${directory.path}/payment_status_report.pdf');
+        await file.writeAsBytes(await pdf.save());
+
+        Get.snackbar(
+          'Success',
+          'PDF report saved to Downloads folder.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+
+        // Open the PDF using flutter_pdfview
+        Get.to(() => PDFViewScreen(filePath: file.path));
+      } catch (e) {
+        Get.snackbar(
+          'Error',
+          'Failed to save or open PDF.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } else {
+      Get.snackbar(
+        'Permission Denied',
+        'Storage permission is required to save the PDF.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  /// Function to build a table for the PDF
+  pw.Widget _buildTable(List<Map<String, dynamic>> students) {
+    return pw.Table(
+      border: pw.TableBorder.all(),
+      children: [
+        pw.TableRow(
+          decoration: pw.BoxDecoration(color: PdfColors.grey300),
+          children: [
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8.0),
+              child: pw.Text('Name',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8.0),
+              child: pw.Text('SPID',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8.0),
+              child: pw.Text('Status',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ),
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(8.0),
+              child: pw.Text('Last Updated',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            ),
+          ],
+        ),
+        ...students.map(
+          (student) => pw.TableRow(
+            children: [
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8.0),
+                child: pw.Text(student['name']),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8.0),
+                child: pw.Text(student['spid']),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8.0),
+                child: pw.Text(student['status']),
+              ),
+              pw.Padding(
+                padding: const pw.EdgeInsets.all(8.0),
+                child: pw.Text(student['lastUpdated'] ?? 'N/A'),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

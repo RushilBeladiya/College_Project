@@ -19,8 +19,9 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  StudentHomeController homeController = Get.find();
-  AuthController authController = Get.find();
+  final StudentHomeController homeController =
+      Get.put(StudentHomeController(), permanent: true);
+  final AuthController authController = Get.find();
 
   @override
   Widget build(BuildContext context) {

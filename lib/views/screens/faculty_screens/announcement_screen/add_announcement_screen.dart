@@ -121,19 +121,29 @@ class _FacultyAnnouncementScreenState extends State<FacultyAnnouncementScreen> {
         backgroundColor: AppColor.primaryColor,
         leading: BackButton(color: Colors.white),
       ),
+      backgroundColor: AppColor.appBackGroundColor, // Updated background color
       body: Obx(() {
         return controller.announcements.isEmpty
             ? Center(
-                child: Text(
-                  "No Announcements",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      color: AppColor.primaryColor, // Loader color
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Loading announcements...",
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey),
+                    ),
+                  ],
                 ),
               )
             : ListView.builder(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12), // Added padding
                 itemCount: controller.announcements.length,
                 itemBuilder: (context, index) {
                   final announcement = controller.announcements[index];
@@ -142,32 +152,35 @@ class _FacultyAnnouncementScreenState extends State<FacultyAnnouncementScreen> {
                         borderRadius: BorderRadius.circular(15)),
                     elevation: 5,
                     color: Colors.white,
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(12),
-                      title: Text(
-                        announcement.title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: AppColor.primaryColor,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(announcement.description),
-                          const SizedBox(height: 5),
-                          Text(
-                            'Date: ${announcement.date}',
-                            style:
-                                TextStyle(fontSize: 12, color: Colors.black54),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0), // Added padding
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.all(12),
+                        title: Text(
+                          announcement.title,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: AppColor.primaryColor,
                           ),
-                        ],
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.redAccent),
-                        onPressed: () =>
-                            _showDeleteConfirmationDialog(announcement.id),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(announcement.description),
+                            const SizedBox(height: 5),
+                            Text(
+                              'Date: ${announcement.date}',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.black54),
+                            ),
+                          ],
+                        ),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete, color: Colors.redAccent),
+                          onPressed: () =>
+                              _showDeleteConfirmationDialog(announcement.id),
+                        ),
                       ),
                     ),
                   );

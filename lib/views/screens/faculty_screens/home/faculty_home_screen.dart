@@ -2,11 +2,12 @@ import 'dart:io';
 
 import 'package:college_project/controller/Faculty/home/faculty_home_controller.dart';
 import 'package:college_project/controller/main/syllabus_controller.dart';
+import 'package:college_project/views/screens/administrator_screens/settings/admin_settings_screen.dart';
+import 'package:college_project/views/screens/administrator_screens/staff_list_screen/staff_list_screen.dart';
 import 'package:college_project/views/screens/auth_screen/student_auth_screen/student_registration_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/announcement_screen/add_announcement_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/attendance_screen/faculty_attendance_main_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/eventscreen/facultyeventscreen.dart';
-import 'package:college_project/views/screens/faculty_screens/faculty_stafflist_screen/faculty_staff_list_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/home/faculty_lectures_view_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/payment_screens/faculty_payment_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/profile/faculty_profile_screen.dart';
@@ -25,7 +26,6 @@ import '../../../../controller/Auth/dateTimeController.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/images.dart';
 import '../../student_screens/home/contact_us_screen.dart';
-import '../../student_screens/setting_screen/settings_screen.dart';
 import '../../student_screens/setting_screen/webview_screen.dart';
 
 class FacultyHomeScreen extends StatefulWidget {
@@ -229,7 +229,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                         size: 22.sp,
                       ),
                       onPressed: () async {
-                        await Get.to(() => const SettingsScreen());
+                        await Get.to(() => AdminSettingsScreen());
                       },
                     ),
                   ],
@@ -369,7 +369,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Get.to(() => FacultyStaffListScreen());
+                    Get.to(() => StaffListScreen());
                   },
                   child: buildDashboardItem(
                     title: "Staff Profile",
@@ -486,8 +486,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                 leading: Icon(Icons.settings),
                 title: Text('Settings'),
                 onTap: () async {
-                  await Get.to(
-                      () => const SettingsScreen()); // Close the drawer
+                  await Get.to(() => AdminSettingsScreen()); // Close the drawer
                 },
               ),
             ),

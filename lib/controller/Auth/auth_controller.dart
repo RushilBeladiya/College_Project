@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:college_project/models/faculty_model.dart';
 import 'package:college_project/models/student_model.dart';
 import 'package:college_project/views/screens/faculty_screens/home/faculty_home_screen.dart';
@@ -12,7 +11,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../views/screens/administrator_screens/home/admin_home_screen.dart';
 import '../../views/screens/auth_screen/student_auth_screen/student_login_screen.dart';
-import '../../views/screens/auth_screen/student_auth_screen/student_registration_screen.dart';
 import '../../views/screens/student_screens/home/home_screen.dart';
 
 class AuthController extends GetxController {
@@ -453,25 +451,25 @@ class AuthController extends GetxController {
     await prefs.setString('role', role);
   }
 
-  Future<void> deleteUser(String uid) async {
-    try {
-      await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+  // Future<void> deleteUser(String uid) async {
+  //   try {
+  //     await FirebaseFirestore.instance.collection('student').doc(uid).delete();
 
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        await user.delete();
-      }
+  //     User? user = FirebaseAuth.instance.currentUser;
+  //     if (user != null) {
+  //       await user.delete();
+  //     }
 
-      // Navigate to the registration screen
-      Get.offAll(() => StudentRegistrationScreen());
+  //     // Navigate to the registration screen
+  //     // Get.offAll(() => StudentRegistrationScreen());
 
-      Get.snackbar("Success", "User deleted successfully",
-          snackPosition: SnackPosition.BOTTOM);
-    } catch (e) {
-      Get.snackbar("Error", "Failed to delete user: $e",
-          snackPosition: SnackPosition.BOTTOM);
-    }
-  }
+  //     Get.snackbar("Success", "User deleted successfully",
+  //         snackPosition: SnackPosition.BOTTOM);
+  //   } catch (e) {
+  //     Get.snackbar("Error", "Failed to delete user: $e",
+  //         snackPosition: SnackPosition.BOTTOM);
+  //   }
+  // }
 
   Future<void> deleteFacultyUser(String uid) async {
     try {

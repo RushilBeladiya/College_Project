@@ -199,6 +199,7 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
     List<dynamic> filteredStudents = _getFilteredStudents();
 
     return Scaffold(
+      backgroundColor: Colors.white, // Set background color to white
       appBar: AppBar(
         title: Text(
           'Attendance',
@@ -468,9 +469,10 @@ class _ClassDetailsScreenState extends State<ClassDetailsScreen> {
                               : null,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
+                              color:
+                                  Colors.black.withOpacity(0.1), // Shadow color
+                              blurRadius: 6, // Blur radius
+                              offset: Offset(0, 5), // Offset for the shadow
                             ),
                           ],
                         ),

@@ -27,7 +27,7 @@ class EmailVerificationWidget extends StatelessWidget {
 
       if (controller.isChecking.value) {
         return Padding(
-          padding: EdgeInsets.all(15),
+          padding: EdgeInsets.all(5),
           child: Center(
               child: CircularProgressIndicator(
                   strokeWidth: 1.w, color: AppColor.primaryColor)),
