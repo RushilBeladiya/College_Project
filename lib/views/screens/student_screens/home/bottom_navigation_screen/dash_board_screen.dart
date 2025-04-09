@@ -145,17 +145,24 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 10.w),
                       child: Obx(
                         () => CircleAvatar(
-                          backgroundColor: AppColor.whiteColor,
+                          backgroundColor:
+                              AppColor.primaryColor.withOpacity(0.1),
                           radius: 32.r,
-                          child: CircleAvatar(
-                            radius: 30.r,
-                            backgroundImage: homeController.currentStudent.value
-                                    .profileImageUrl.isNotEmpty
-                                ? NetworkImage(homeController
-                                    .currentStudent.value.profileImageUrl)
-                                : const AssetImage(AppImage.user)
-                                    as ImageProvider,
-                          ),
+                          child: homeController.isLoading.value
+                              ? CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColor.primaryColor,
+                                )
+                              : CircleAvatar(
+                                  radius: 30.r,
+                                  backgroundImage: homeController.currentStudent
+                                          .value.profileImageUrl.isNotEmpty
+                                      ? NetworkImage(homeController
+                                          .currentStudent.value.profileImageUrl)
+                                      : const AssetImage(
+                                              'assets/college_image/avatar.png')
+                                          as ImageProvider,
+                                ),
                         ),
                       ),
                     ),

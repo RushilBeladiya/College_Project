@@ -501,8 +501,11 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
                       children: [
                         CircleAvatar(
                           radius: 50,
-                          backgroundImage:
-                              NetworkImage(student.profileImageUrl),
+                          backgroundImage: student.profileImageUrl.isNotEmpty
+                              ? NetworkImage(student.profileImageUrl)
+                              : const AssetImage(
+                                      'D:\\college_project\\assets\\college_image\\avatar.png')
+                                  as ImageProvider,
                           backgroundColor:
                               AppColor.primaryColor.withOpacity(0.1),
                         ),
