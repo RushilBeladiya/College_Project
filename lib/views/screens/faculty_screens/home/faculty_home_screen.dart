@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:college_project/controller/Faculty/home/faculty_home_controller.dart';
 import 'package:college_project/controller/main/syllabus_controller.dart';
 import 'package:college_project/views/screens/auth_screen/student_auth_screen/student_registration_screen.dart';
@@ -8,21 +9,21 @@ import 'package:college_project/views/screens/faculty_screens/eventscreen/facult
 import 'package:college_project/views/screens/faculty_screens/faculty_stafflist_screen/faculty_staff_list_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/home/faculty_lectures_view_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/payment_screens/faculty_payment_screen.dart';
+import 'package:college_project/views/screens/faculty_screens/profile/faculty_profile_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/student_info_screen/student_list_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/syllabus_screens/Faculty_syllabus_screen.dart';
 import 'package:college_project/views/screens/gallery_main_screen/gallery_main_screen.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../controller/Auth/auth_controller.dart';
 import '../../../../controller/Auth/dateTimeController.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/images.dart';
-import '../../student_screens/home/bottom_navigation_screen/profile_screen.dart';
 import '../../student_screens/home/contact_us_screen.dart';
 import '../../student_screens/setting_screen/settings_screen.dart';
 import '../../student_screens/setting_screen/webview_screen.dart';
@@ -37,12 +38,14 @@ class FacultyHomeScreen extends StatefulWidget {
 class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
   final DateTimeController dateTimeController = Get.find();
   final AuthController authController = Get.find();
-  final FacultyHomeController facultyHomeController = Get.put(FacultyHomeController());
+  final FacultyHomeController facultyHomeController =
+      Get.put(FacultyHomeController());
   final SyllabusController syllabusController = Get.put(SyllabusController());
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickAndUploadImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) return;
 
     Get.dialog(
@@ -52,7 +55,8 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
 
     try {
       File imageFile = File(pickedFile.path);
-      String fileName = 'faculty_images/${facultyHomeController.facultyModel.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      String fileName =
+          'faculty_images/${facultyHomeController.facultyModel.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
 
       // Upload to Firebase Storage
       Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
@@ -72,7 +76,8 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
   Future<void> _deleteProfileImage() async {
     try {
       // Get the current image URL to delete from storage
-      String currentImageUrl = facultyHomeController.facultyModel.value.profileImageUrl;
+      String currentImageUrl =
+          facultyHomeController.facultyModel.value.profileImageUrl;
       if (currentImageUrl.isNotEmpty) {
         // Extract the file path from the URL
         Uri uri = Uri.parse(currentImageUrl);
@@ -93,68 +98,18 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
   }
 
   Widget _buildProfileImage() {
-    return GestureDetector(
-      onTap: _pickAndUploadImage,
-      child: Stack(
-        alignment: Alignment.bottomRight,
-        children: [
-          Obx(
-                () => CircleAvatar(
-              backgroundColor: AppColor.whiteColor,
-              radius: 42.r,
-              child: CircleAvatar(
-                radius: 40.r,
-                backgroundImage: facultyHomeController
-                    .facultyModel
-                    .value
-                    .profileImageUrl
-                    .isNotEmpty
-                    ? NetworkImage(facultyHomeController
-                    .facultyModel.value.profileImageUrl)
-                    : const AssetImage(AppImage.user)
-                as ImageProvider,
-              ),
-            ),
-          ),
-          if (facultyHomeController.facultyModel.value.profileImageUrl.isNotEmpty)
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: GestureDetector(
-                onTap: _deleteProfileImage,
-                child: Container(
-                  padding: EdgeInsets.all(4.r),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColor.whiteColor, width: 2),
-                  ),
-                  child: Icon(
-                    Icons.delete,
-                    color: AppColor.whiteColor,
-                    size: 16.sp,
-                  ),
-                ),
-              ),
-            ),
-          Positioned(
-            right: facultyHomeController.facultyModel.value.profileImageUrl.isNotEmpty ? 20.w : 0,
-            bottom: 0,
-            child: Container(
-              padding: EdgeInsets.all(4.r),
-              decoration: BoxDecoration(
-                color: AppColor.primaryColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColor.whiteColor, width: 2),
-              ),
-              child: Icon(
-                Icons.edit,
-                color: AppColor.whiteColor,
-                size: 16.sp,
-              ),
-            ),
-          ),
-        ],
+    return Obx(
+      () => CircleAvatar(
+        backgroundColor: AppColor.whiteColor,
+        radius: 42.r,
+        child: CircleAvatar(
+          radius: 40.r,
+          backgroundImage: facultyHomeController
+                  .facultyModel.value.profileImageUrl.isNotEmpty
+              ? NetworkImage(
+                  facultyHomeController.facultyModel.value.profileImageUrl)
+              : const AssetImage(AppImage.user) as ImageProvider,
+        ),
       ),
     );
   }
@@ -235,7 +190,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Obx(
-                              () => Text(
+                          () => Text(
                             dateTimeController.formattedDate.value,
                             style: TextStyle(
                               fontSize: 14.sp,
@@ -245,7 +200,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                           ),
                         ),
                         Obx(
-                              () => Text(
+                          () => Text(
                             dateTimeController.formattedTime.value,
                             style: TextStyle(
                               fontSize: 12.sp,
@@ -264,7 +219,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                         size: 22.sp,
                       ),
                       onPressed: () async {
-                        await Get.to(() => const ProfileScreen());
+                        await Get.to(() => FacultyProfileScreen());
                       },
                     ),
                     IconButton(
@@ -297,7 +252,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                           children: [
                             SizedBox(height: 20.h),
                             Obx(
-                                  () => Text(
+                              () => Text(
                                 "${facultyHomeController.facultyModel.value.firstName} ${facultyHomeController.facultyModel.value.lastName} ${facultyHomeController.facultyModel.value.surName}",
                                 style: TextStyle(
                                   fontSize: 16.sp,
@@ -309,7 +264,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                             ),
                             SizedBox(height: 3.h),
                             Obx(
-                                  () => Text(
+                              () => Text(
                                 'Mobile : ${facultyHomeController.facultyModel.value.phoneNumber}',
                                 style: TextStyle(
                                   color: AppColor.whiteColor,
@@ -320,7 +275,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                             ),
                             SizedBox(height: 3.h),
                             Obx(
-                                  () => Text(
+                              () => Text(
                                 'Email : ${facultyHomeController.facultyModel.value.email}',
                                 style: TextStyle(
                                   color: AppColor.whiteColor,
@@ -497,7 +452,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
               leading: Icon(Icons.person),
               title: const Text('Profile'),
               onTap: () async {
-                await Get.to(() => const ProfileScreen()); // Close the drawer
+                await Get.to(() => FacultyProfileScreen()); // Close the drawer
               },
             ),
             ListTile(

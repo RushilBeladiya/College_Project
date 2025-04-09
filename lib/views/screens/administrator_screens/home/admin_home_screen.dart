@@ -445,13 +445,13 @@ import 'package:college_project/core/utils/images.dart';
 import 'package:college_project/views/screens/administrator_screens/gallery_screen/add_image_screen.dart';
 import 'package:college_project/views/screens/administrator_screens/payment_screen/set_fees_payment_screen.dart';
 import 'package:college_project/views/screens/administrator_screens/profile/admin_profile_screen.dart';
-import 'package:college_project/views/screens/administrator_screens/settings/admin_settings_screen.dart';
 import 'package:college_project/views/screens/administrator_screens/staff_list_screen/staff_list_screen.dart';
 import 'package:college_project/views/screens/auth_screen/admin_auth_screen/faculty_registration_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/eventscreen/facultyeventscreen.dart';
 import 'package:college_project/views/screens/faculty_screens/student_info_screen/student_list_screen.dart';
 import 'package:college_project/views/screens/student_screens/home/college_info_screen.dart';
 import 'package:college_project/views/screens/student_screens/home/contact_us_screen.dart';
+import 'package:college_project/views/screens/student_screens/setting_screen/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -564,7 +564,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
                         size: 22.sp,
                       ),
                       onPressed: () async {
-                        await Get.to(() => AdminSettingsScreen());
+                        await Get.to(() => SettingsScreen());
                       },
                     ),
                   ],
@@ -810,7 +810,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
               child: _buildDrawerItem(
                 icon: Icons.settings,
                 title: 'Settings',
-                onTap: () => Get.to(() => AdminSettingsScreen()),
+                onTap: () => Get.to(() => SettingsScreen()),
               ),
             ),
           ],
