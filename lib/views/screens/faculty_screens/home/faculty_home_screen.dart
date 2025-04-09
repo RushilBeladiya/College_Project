@@ -1,26 +1,31 @@
+import 'dart:io';
+
 import 'package:college_project/controller/Faculty/home/faculty_home_controller.dart';
 import 'package:college_project/controller/main/syllabus_controller.dart';
-import 'package:college_project/views/screens/administrator_screens/staff_list_screen.dart';
+import 'package:college_project/views/screens/administrator_screens/settings/admin_settings_screen.dart';
+import 'package:college_project/views/screens/administrator_screens/staff_list_screen/staff_list_screen.dart';
 import 'package:college_project/views/screens/auth_screen/student_auth_screen/student_registration_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/announcement_screen/add_announcement_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/attendance_screen/faculty_attendance_main_screen.dart';
-import 'package:college_project/views/screens/faculty_screens/faculty_stafflist_screen/faculty_staff_list_screen.dart';
+import 'package:college_project/views/screens/faculty_screens/eventscreen/facultyeventscreen.dart';
 import 'package:college_project/views/screens/faculty_screens/home/faculty_lectures_view_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/payment_screens/faculty_payment_screen.dart';
+import 'package:college_project/views/screens/faculty_screens/profile/faculty_profile_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/student_info_screen/student_list_screen.dart';
 import 'package:college_project/views/screens/faculty_screens/syllabus_screens/Faculty_syllabus_screen.dart';
 import 'package:college_project/views/screens/gallery_main_screen/gallery_main_screen.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:share_plus/share_plus.dart';
+
 import '../../../../controller/Auth/auth_controller.dart';
 import '../../../../controller/Auth/dateTimeController.dart';
 import '../../../../core/utils/colors.dart';
 import '../../../../core/utils/images.dart';
 import '../../student_screens/home/contact_us_screen.dart';
-import '../../student_screens/home/bottom_navigation_screen/profile_screen.dart';
-import '../../student_screens/setting_screen/settings_screen.dart';
 import '../../student_screens/setting_screen/webview_screen.dart';
 
 class FacultyHomeScreen extends StatefulWidget {
@@ -35,8 +40,112 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
   final AuthController authController = Get.find();
   final FacultyHomeController facultyHomeController =
       Get.put(FacultyHomeController());
-  final SyllabusController syllabusController =
-  Get.put(SyllabusController());
+  final SyllabusController syllabusController = Get.put(SyllabusController());
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickAndUploadImage() async {
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) return;
+
+    Get.dialog(
+      const Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+
+    try {
+      File imageFile = File(pickedFile.path);
+      String fileName =
+          'faculty_images/${facultyHomeController.facultyModel.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      // Upload to Firebase Storage
+      Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
+      await storageRef.putFile(imageFile);
+      String imageUrl = await storageRef.getDownloadURL();
+
+      // Update in Firebase Database
+      await facultyHomeController.updateFacultyProfileImage(imageUrl);
+
+      Get.back(); // Close loading dialog
+    } catch (e) {
+      Get.back(); // Close loading dialog
+      Get.snackbar('Error', 'Failed to upload image: ${e.toString()}');
+    }
+  }
+
+  Future<void> _deleteProfileImage() async {
+    try {
+      // Get the current image URL to delete from storage
+      String currentImageUrl =
+          facultyHomeController.facultyModel.value.profileImageUrl;
+      if (currentImageUrl.isNotEmpty) {
+        // Extract the file path from the URL
+        Uri uri = Uri.parse(currentImageUrl);
+        String filePath = uri.path.split('/o/')[1].split('?')[0];
+
+        // Delete from storage
+        Reference storageRef = FirebaseStorage.instance.ref().child(filePath);
+        await storageRef.delete();
+      }
+
+      // Update in Firebase Database
+      await facultyHomeController.updateFacultyProfileImage("");
+
+      Get.snackbar('Success', 'Profile image removed');
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to delete image: ${e.toString()}');
+    }
+  }
+
+  Widget _buildProfileImage() {
+    return Obx(
+      () => CircleAvatar(
+        backgroundColor: AppColor.whiteColor,
+        radius: 42.r,
+        child: CircleAvatar(
+          radius: 40.r,
+          backgroundImage: facultyHomeController
+                  .facultyModel.value.profileImageUrl.isNotEmpty
+              ? NetworkImage(
+                  facultyHomeController.facultyModel.value.profileImageUrl)
+              : const AssetImage(AppImage.user) as ImageProvider,
+        ),
+      ),
+    );
+  }
+
+  Widget buildDashboardItem({required String title, required String image}) {
+    return Container(
+      alignment: Alignment.center,
+      padding: EdgeInsets.only(left: 15.w, right: 25.w),
+      decoration: BoxDecoration(
+        color: AppColor.primaryColor.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Image.asset(
+            height: 28.h,
+            fit: BoxFit.contain,
+            image,
+            filterQuality: FilterQuality.high,
+          ),
+          Text(
+            title,
+            textAlign: TextAlign.start,
+            style: TextStyle(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w500,
+              color: AppColor.blackColor,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +185,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                         );
                       },
                     ),
-                    SizedBox(
-                      width: 10.w,
-                    ),
+                    SizedBox(width: 10.w),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -95,7 +202,6 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                         Obx(
                           () => Text(
                             dateTimeController.formattedTime.value,
-                            // Time
                             style: TextStyle(
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w500,
@@ -113,7 +219,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                         size: 22.sp,
                       ),
                       onPressed: () async {
-                        await Get.to(() => const ProfileScreen());
+                        await Get.to(() => FacultyProfileScreen());
                       },
                     ),
                     IconButton(
@@ -123,14 +229,12 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                         size: 22.sp,
                       ),
                       onPressed: () async {
-                        await Get.to(() => const SettingsScreen());
+                        await Get.to(() => AdminSettingsScreen());
                       },
                     ),
                   ],
                 ),
-                SizedBox(
-                  height: 5.h,
-                ),
+                SizedBox(height: 5.h),
                 SizedBox(
                   width: 400.w,
                   child: Row(
@@ -139,33 +243,14 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                     children: [
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10.w),
-                        child: Obx(
-                          () => CircleAvatar(
-                            backgroundColor: AppColor.whiteColor,
-                            radius: 42.r,
-                            child: CircleAvatar(
-                              radius: 40.r,
-                              backgroundImage: facultyHomeController
-                                      .facultyModel
-                                      .value
-                                      .profileImageUrl
-                                      .isNotEmpty
-                                  ? NetworkImage(facultyHomeController
-                                      .facultyModel.value.profileImageUrl)
-                                  : const AssetImage(AppImage.user)
-                                      as ImageProvider,
-                            ),
-                          ),
-                        ),
+                        child: _buildProfileImage(),
                       ),
-                      SizedBox(
-                        width: 10.w,
-                      ),
+                      SizedBox(width: 10.w),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(height: 20.h,),
+                            SizedBox(height: 20.h),
                             Obx(
                               () => Text(
                                 "${facultyHomeController.facultyModel.value.firstName} ${facultyHomeController.facultyModel.value.lastName} ${facultyHomeController.facultyModel.value.surName}",
@@ -177,9 +262,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            SizedBox(
-                              height: 3.h,
-                            ),
+                            SizedBox(height: 3.h),
                             Obx(
                               () => Text(
                                 'Mobile : ${facultyHomeController.facultyModel.value.phoneNumber}',
@@ -190,9 +273,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            SizedBox(
-                              height: 3.h,
-                            ),
+                            SizedBox(height: 3.h),
                             Obx(
                               () => Text(
                                 'Email : ${facultyHomeController.facultyModel.value.email}',
@@ -203,9 +284,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            SizedBox(
-                              height: 10.h,
-                            ),
+                            SizedBox(height: 10.h),
                           ],
                         ),
                       ),
@@ -271,8 +350,8 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: (){
-                    Get.to(()=> PaymentStatusShowScreen());
+                  onTap: () {
+                    Get.to(() => PaymentStatusShowScreen());
                   },
                   child: buildDashboardItem(
                     title: "Fee payment",
@@ -280,8 +359,8 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: (){
-                    Get.to(()=> FacultyAnnouncementScreen());
+                  onTap: () {
+                    Get.to(() => FacultyAnnouncementScreen());
                   },
                   child: buildDashboardItem(
                     title: "Notice",
@@ -289,21 +368,26 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: (){
-                    Get.to(()=> FacultyStaffListScreen());
+                  onTap: () {
+                    Get.to(() => StaffListScreen());
                   },
                   child: buildDashboardItem(
                     title: "Staff Profile",
                     image: AppImage.staffProfile,
                   ),
                 ),
-                buildDashboardItem(
-                  title: "Event",
-                  image: AppImage.event,
+                GestureDetector(
+                  onTap: () {
+                    Get.to(() => FacultyEventScreen());
+                  },
+                  child: buildDashboardItem(
+                    title: "Event",
+                    image: AppImage.event,
+                  ),
                 ),
                 GestureDetector(
-                  onTap: (){
-                    Get.to(()=> GalleryScreen());
+                  onTap: () {
+                    Get.to(() => GalleryScreen());
                   },
                   child: buildDashboardItem(
                     title: "Gallery",
@@ -368,7 +452,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
               leading: Icon(Icons.person),
               title: const Text('Profile'),
               onTap: () async {
-                await Get.to(() => const ProfileScreen()); // Close the drawer
+                await Get.to(() => FacultyProfileScreen()); // Close the drawer
               },
             ),
             ListTile(
@@ -402,8 +486,7 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
                 leading: Icon(Icons.settings),
                 title: Text('Settings'),
                 onTap: () async {
-                  await Get.to(
-                      () => const SettingsScreen()); // Close the drawer
+                  await Get.to(() => AdminSettingsScreen()); // Close the drawer
                 },
               ),
             ),
@@ -413,36 +496,36 @@ class _FacultyHomeScreenState extends State<FacultyHomeScreen> {
     );
   }
 
-  Widget buildDashboardItem({required String title, required String image}) {
-    return Container(
-      alignment: Alignment.center,
-      padding: EdgeInsets.only(left: 15.w, right: 25.w),
-      decoration: BoxDecoration(
-        color: AppColor.primaryColor.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Image.asset(
-            height: 28.h,
-            fit: BoxFit.contain,
-            image,
-            filterQuality: FilterQuality.high,
-          ),
-          Text(
-            title,
-            textAlign: TextAlign.start,
-            style: TextStyle(
-              fontSize: 13.sp,
-              fontWeight: FontWeight.w500,
-              color: AppColor.blackColor,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget buildDashboardItem({required String title, required String image}) {
+  //   return Container(
+  //     alignment: Alignment.center,
+  //     padding: EdgeInsets.only(left: 15.w, right: 25.w),
+  //     decoration: BoxDecoration(
+  //       color: AppColor.primaryColor.withOpacity(0.15),
+  //       borderRadius: BorderRadius.circular(8.r),
+  //     ),
+  //     child: Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       crossAxisAlignment: CrossAxisAlignment.center,
+  //       children: [
+  //         Image.asset(
+  //           height: 28.h,
+  //           fit: BoxFit.contain,
+  //           image,
+  //           filterQuality: FilterQuality.high,
+  //         ),
+  //         Text(
+  //           title,
+  //           textAlign: TextAlign.start,
+  //           style: TextStyle(
+  //             fontSize: 13.sp,
+  //             fontWeight: FontWeight.w500,
+  //             color: AppColor.blackColor,
+  //             overflow: TextOverflow.ellipsis,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 }

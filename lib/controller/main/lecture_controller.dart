@@ -15,38 +15,199 @@ class LectureController extends GetxController {
   var endTime = Rxn<TimeOfDay>();
   var selectedDivision = RxnString();
 
-
   TextEditingController roomController = TextEditingController();
 
   List<String> semesters = [
-    "Semester 1", "Semester 2", "Semester 3", "Semester 4",
-    "Semester 5", "Semester 6", "Semester 7", "Semester 8"
+    "Semester 1",
+    "Semester 2",
+    "Semester 3",
+    "Semester 4",
+    "Semester 5",
+    "Semester 6",
+    "Semester 7",
+    "Semester 8"
   ];
 
   Map<String, Map<String, List<String>>> streamSemesterSubjects = {
-    "B.COM": {
-      "Semester 1": ["a", "b"], "Semester 2": ["c", "d"],
-      "Semester 3": ["e", "f"], "Semester 4": ["g", "h"],
-      "Semester 5": ["i", "j"], "Semester 6": ["k", "l"],
-      "Semester 7": ["m", "n"], "Semester 8": ["o", "p"],
+    "BCOM": {
+      "Semester 1": [
+        "Financial Accounting",
+        "Business Communication",
+        "Economics",
+        "Business Mathematics",
+        "Environmental Studies"
+      ],
+      "Semester 2": [
+        "Corporate Accounting",
+        "Business Economics",
+        "Principles of Management",
+        "Marketing Management",
+        "Computer Applications"
+      ],
+      "Semester 3": [
+        "Cost Accounting",
+        "Business Law",
+        "Taxation",
+        "Entrepreneurship",
+        "Statistics"
+      ],
+      "Semester 4": [
+        "Income Tax",
+        "Auditing",
+        "Human Resource Management",
+        "Financial Management",
+        "Research Methodology"
+      ],
+      "Semester 5": [
+        "Management Accounting",
+        "Marketing Management",
+        "Corporate Law",
+        "Banking & Insurance",
+        "Business Ethics"
+      ],
+      "Semester 6": [
+        "Banking & Insurance",
+        "Financial Management",
+        "International Business",
+        "Strategic Management",
+        "Consumer Behavior"
+      ],
+      "Semester 7": [
+        "International Business",
+        "Entrepreneurship Development",
+        "E-commerce",
+        "Retail Management",
+        "Leadership Skills"
+      ],
+      "Semester 8": [
+        "Advanced Auditing",
+        "Business Environment",
+        "Investment Analysis",
+        "Risk Management",
+        "Project Management"
+      ],
     },
     "BCA": {
-      "Semester 1": ["a", "b"], "Semester 2": ["c", "d"],
-      "Semester 3": ["e", "f"], "Semester 4": ["g", "h"],
-      "Semester 5": ["i", "j"], "Semester 6": ["k", "l"],
-      "Semester 7": ["m", "n"], "Semester 8": ["o", "p"],
+      "Semester 1": [
+        "Computer Fundamentals",
+        "C Programming",
+        "Mathematics",
+        "Communication Skills",
+        "IT Tools & Applications"
+      ],
+      "Semester 2": [
+        "Data Structures",
+        "Digital Electronics",
+        "Database Management Systems",
+        "Operating Systems",
+        "Software Engineering"
+      ],
+      "Semester 3": [
+        "Object-Oriented Programming",
+        "Web Technologies",
+        "Computer Networks",
+        "Data Analysis",
+        "Cloud Computing"
+      ],
+      "Semester 4": [
+        "Operating Systems",
+        "Software Engineering",
+        "Java Programming",
+        "Mobile Application Development",
+        "Cyber Security"
+      ],
+      "Semester 5": [
+        "Web Development",
+        "Computer Networks",
+        "Data Science",
+        "Artificial Intelligence",
+        "Machine Learning"
+      ],
+      "Semester 6": [
+        "Mobile App Development",
+        "Cyber Security",
+        "Big Data Analytics",
+        "Blockchain Technology",
+        "Internet of Things (IoT)"
+      ],
+      "Semester 7": [
+        "Artificial Intelligence",
+        "Cloud Computing",
+        "Data Visualization",
+        "Deep Learning",
+        "Full Stack Development"
+      ],
+      "Semester 8": [
+        "Big Data Analytics",
+        "Machine Learning",
+        "Natural Language Processing",
+        "Robotics",
+        "Project Work"
+      ],
     },
     "BBA": {
-      "Semester 1": ["a", "b"], "Semester 2": ["c", "d"],
-      "Semester 3": ["e", "f"], "Semester 4": ["g", "h"],
-      "Semester 5": ["i", "j"], "Semester 6": ["k", "l"],
-      "Semester 7": ["m", "n"], "Semester 8": ["o", "p"],
+      "Semester 1": [
+        "Principles of Management",
+        "Business Economics",
+        "Financial Accounting",
+        "Business Communication",
+        "Business Mathematics"
+      ],
+      "Semester 2": [
+        "Marketing Management",
+        "Financial Accounting",
+        "Organizational Behavior",
+        "Business Law",
+        "Statistics for Business"
+      ],
+      "Semester 3": [
+        "Human Resource Management",
+        "Organizational Behavior",
+        "Operations Research",
+        "Corporate Finance",
+        "Consumer Behavior"
+      ],
+      "Semester 4": [
+        "Business Law",
+        "Cost Accounting",
+        "Strategic Management",
+        "International Business",
+        "Entrepreneurship Development"
+      ],
+      "Semester 5": [
+        "Financial Management",
+        "Operations Management",
+        "Research Methodology",
+        "Digital Marketing",
+        "Leadership Skills"
+      ],
+      "Semester 6": [
+        "Strategic Management",
+        "International Business",
+        "Business Ethics",
+        "E-commerce",
+        "Retail Management"
+      ],
+      "Semester 7": [
+        "Entrepreneurship",
+        "Consumer Behavior",
+        "Supply Chain Management",
+        "Investment Management",
+        "Risk Management"
+      ],
+      "Semester 8": [
+        "Business Ethics",
+        "Leadership and Change Management",
+        "Global Business Environment",
+        "Project Management",
+        "Innovation & Creativity"
+      ],
     },
   };
 
   List<String> getDivisions() {
     if (selectedSemester.value != null) {
-      return ["A", "B", "C","D","E","F","G","H"];
+      return ["A", "B", "C", "D", "E", "F", "G", "H"];
     }
     return [];
   }
@@ -58,14 +219,18 @@ class LectureController extends GetxController {
   }
 
   List<String> getSubjects() {
-    if (selectedStream.value == null || selectedSemester.value == null) return [];
-    return streamSemesterSubjects[selectedStream.value!]?[selectedSemester.value!] ?? [];
+    if (selectedStream.value == null || selectedSemester.value == null)
+      return [];
+    return streamSemesterSubjects[selectedStream.value!]
+            ?[selectedSemester.value!] ??
+        [];
   }
 
-  RxList<Map<String, dynamic>> studentLecturesList = <Map<String, dynamic>>[].obs;
-  RxList<Map<String, dynamic>> facultyLecturesList = <Map<String, dynamic>>[].obs;
+  RxList<Map<String, dynamic>> studentLecturesList =
+      <Map<String, dynamic>>[].obs;
+  RxList<Map<String, dynamic>> facultyLecturesList =
+      <Map<String, dynamic>>[].obs;
   RxBool isLoading = true.obs;
-
 
   void fetchStudentLectures(String stream, String semester) {
     isLoading.value = true;
@@ -76,14 +241,15 @@ class LectureController extends GetxController {
       if (data != null) {
         DateTime now = DateTime.now();
         DateFormat dateFormat = DateFormat("dd-MM-yyyy"); // Format for parsing
-        DateFormat time12Format = DateFormat("hh:mm a"); // 12-hour format with AM/PM
+        DateFormat time12Format =
+            DateFormat("hh:mm a"); // 12-hour format with AM/PM
         DateFormat time24Format = DateFormat("HH:mm"); // 24-hour format
 
         studentLecturesList.value = data.entries
             .map((e) => {
-          "id": e.key,
-          ...Map<String, dynamic>.from(e.value),
-        })
+                  "id": e.key,
+                  ...Map<String, dynamic>.from(e.value),
+                })
             .where((lecture) {
           final String lectureDateStr = lecture["date"]?.trim() ?? "";
           final String startTimeStr = lecture["start_time"]?.trim() ?? "";
@@ -119,8 +285,7 @@ class LectureController extends GetxController {
             print("Date parsing error: $e");
             return false;
           }
-        })
-            .toList();
+        }).toList();
       } else {
         studentLecturesList.clear();
       }
@@ -129,7 +294,8 @@ class LectureController extends GetxController {
     });
   }
 
-  void fetchFacultyLectures(String stream, String semester, DateTime selectedDate) {
+  void fetchFacultyLectures(
+      String stream, String semester, DateTime selectedDate) {
     isLoading.value = true;
 
     dbRef.onValue.listen((event) {
@@ -140,15 +306,17 @@ class LectureController extends GetxController {
 
         facultyLecturesList.value = data.entries
             .map((e) => {
-          "id": e.key,
-          ...Map<String, dynamic>.from(e.value),
-        })
+                  "id": e.key,
+                  ...Map<String, dynamic>.from(e.value),
+                })
             .where((lecture) {
           final String lectureStream = lecture["stream"] ?? "";
           final String lectureSemester = lecture["semester"] ?? "";
           final String lectureDateStr = lecture["date"]?.trim() ?? "";
 
-          if (lectureStream.isEmpty || lectureSemester.isEmpty || lectureDateStr.isEmpty) return false;
+          if (lectureStream.isEmpty ||
+              lectureSemester.isEmpty ||
+              lectureDateStr.isEmpty) return false;
 
           try {
             DateTime lectureDate = dateFormat.parse(lectureDateStr);
@@ -163,7 +331,6 @@ class LectureController extends GetxController {
             return false;
           }
         }).toList();
-
       } else {
         facultyLecturesList.clear();
       }
@@ -171,12 +338,6 @@ class LectureController extends GetxController {
       isLoading.value = false;
     });
   }
-
-
-
-
-
-
 
   // void fetchLectures(String stream, String semester) {
   //   isLoading.value = true;
@@ -215,6 +376,7 @@ class LectureController extends GetxController {
       selectedDate.value = pickedDate;
     }
   }
+
   // Future<void> selectDate(BuildContext context) async {
   //   final DateTime now = DateTime.now();
   //   final DateTime lastSelectableDate = now.add(Duration(days: 7));
@@ -345,7 +507,6 @@ class LectureController extends GetxController {
           backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
-
 }
 
 // class LectureController extends GetxController {

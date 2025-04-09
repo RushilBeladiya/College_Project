@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:college_project/models/faculty_model.dart';
 import 'package:college_project/models/student_model.dart';
 import 'package:college_project/views/screens/faculty_screens/home/faculty_home_screen.dart';
@@ -8,9 +8,9 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../views/screens/administrator_screens/home/admin_home_screen.dart';
 import '../../views/screens/auth_screen/student_auth_screen/student_login_screen.dart';
-import '../../views/screens/auth_screen/student_auth_screen/student_registration_screen.dart';
 import '../../views/screens/student_screens/home/home_screen.dart';
 
 class AuthController extends GetxController {
@@ -44,15 +44,26 @@ class AuthController extends GetxController {
     super.onClose();
   }
 
-  // @override
-  // void onInit() {
-  //   super.onInit();
-  //   // checkEmailVerified();
-  // }
-
   Future<void> checkEmailVerified() async {
-    await auth.currentUser?.reload();
-    isVerified.value = auth.currentUser?.emailVerified ?? false;
+    try {
+      isChecking.value = true;
+      // Always reload user to get fresh verification status
+      await auth.currentUser?.reload();
+      final currentUser = auth.currentUser;
+      if (currentUser != null) {
+        isVerified.value = currentUser.emailVerified;
+        // If verified, update state for UI
+        if (isVerified.value) {
+          canResend.value = false;
+          countdown.value = 0;
+          _timer?.cancel();
+        }
+      }
+    } catch (e) {
+      print("Error checking email verification: $e");
+    } finally {
+      isChecking.value = false;
+    }
   }
 
   Future<void> sendVerificationEmail() async {
@@ -60,12 +71,22 @@ class AuthController extends GetxController {
 
     isChecking.value = true;
     try {
-      await auth.currentUser?.sendEmailVerification();
-      checkEmailVerified(); // Immediately check if verified
-      if (isVerified.value) return; // If verified, stop countdown & show ✅ icon
-      canResend.value = false;
-      countdown.value = 90;
-      startCountdown();
+      final user = auth.currentUser;
+      if (user != null && !user.emailVerified) {
+        await user.sendEmailVerification();
+        canResend.value = false;
+        countdown.value = 90;
+        startCountdown();
+
+        // Start periodic verification check
+        _timer?.cancel();
+        _timer = Timer.periodic(Duration(seconds: 3), (timer) async {
+          await checkEmailVerified();
+          if (isVerified.value) {
+            timer.cancel();
+          }
+        });
+      }
     } catch (e) {
       print("Error sending verification email: $e");
     } finally {
@@ -95,21 +116,21 @@ class AuthController extends GetxController {
 
       if (["phoneNumber", "firstName", "lastName", "surName"].contains(field)) {
         final studentFuture =
-        dbRefStudent.orderByChild(field).equalTo(upperCaseValue).get();
+            dbRefStudent.orderByChild(field).equalTo(upperCaseValue).get();
         final facultyFuture =
-        dbRefFaculty.orderByChild(field).equalTo(upperCaseValue).get();
+            dbRefFaculty.orderByChild(field).equalTo(upperCaseValue).get();
         final adminFuture =
-        dbRefAdmin.orderByChild(field).equalTo(upperCaseValue).get();
+            dbRefAdmin.orderByChild(field).equalTo(upperCaseValue).get();
 
         final results =
-        await Future.wait([studentFuture, facultyFuture, adminFuture]);
+            await Future.wait([studentFuture, facultyFuture, adminFuture]);
         return results.any((snapshot) => snapshot.exists);
       }
 
       // If checking spid → Only check in students collection
       else if (field == "spid") {
         final studentSnapshot =
-        await dbRefStudent.orderByChild(field).equalTo(value).get();
+            await dbRefStudent.orderByChild(field).equalTo(value).get();
         return studentSnapshot.exists;
       }
 
@@ -328,7 +349,8 @@ class AuthController extends GetxController {
     try {
       await FirebaseAuth.instance.signOut();
 
-      var facultyQuery = dbRefFaculty.orderByChild('email').equalTo(email.toLowerCase());
+      var facultyQuery =
+          dbRefFaculty.orderByChild('email').equalTo(email.toLowerCase());
       DatabaseEvent facultyEvent = await facultyQuery.once();
 
       if (facultyEvent.snapshot.exists) {
@@ -369,14 +391,15 @@ class AuthController extends GetxController {
     try {
       await FirebaseAuth.instance.signOut();
 
-      var adminQuery = dbRefAdmin.orderByChild('email').equalTo(email.toLowerCase());
+      var adminQuery =
+          dbRefAdmin.orderByChild('email').equalTo(email.toLowerCase());
       DatabaseEvent adminEvent = await adminQuery.once();
 
       print("Admin Data: ${adminEvent.snapshot.value}"); // Debugging Line
 
       if (adminEvent.snapshot.exists) {
         Map<dynamic, dynamic> adminData =
-        adminEvent.snapshot.value as Map<dynamic, dynamic>;
+            adminEvent.snapshot.value as Map<dynamic, dynamic>;
         Map<dynamic, dynamic> admin = adminData.values.first;
 
         if (admin['phoneNumber'].toString() == phoneNumber.trim()) {
@@ -391,7 +414,8 @@ class AuthController extends GetxController {
             await Get.offAll(() => AdminHomeScreen());
             Get.snackbar("Welcome", "Login Successful!");
           } else {
-            Get.snackbar("Error", "Please verify your email before logging in.");
+            Get.snackbar(
+                "Error", "Please verify your email before logging in.");
           }
         } else {
           Get.snackbar("Login Error", "Incorrect phone number.");
@@ -406,7 +430,6 @@ class AuthController extends GetxController {
     }
   }
 
-
   Future<void> logoutUser() async {
     await FirebaseAuth.instance.signOut();
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -415,7 +438,7 @@ class AuthController extends GetxController {
     email.value = "";
     emailController.clear();
     isVerified.value = false;
-    canResend.value=false;
+    canResend.value = false;
 
     Get.offAll(() => const StudentLoginScreen());
   }
@@ -428,23 +451,72 @@ class AuthController extends GetxController {
     await prefs.setString('role', role);
   }
 
-  Future<void> deleteUser(String uid) async {
-    try {
-      await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+  // Future<void> deleteUser(String uid) async {
+  //   try {
+  //     await FirebaseFirestore.instance.collection('student').doc(uid).delete();
 
+  //     User? user = FirebaseAuth.instance.currentUser;
+  //     if (user != null) {
+  //       await user.delete();
+  //     }
+
+  //     // Navigate to the registration screen
+  //     // Get.offAll(() => StudentRegistrationScreen());
+
+  //     Get.snackbar("Success", "User deleted successfully",
+  //         snackPosition: SnackPosition.BOTTOM);
+  //   } catch (e) {
+  //     Get.snackbar("Error", "Failed to delete user: $e",
+  //         snackPosition: SnackPosition.BOTTOM);
+  //   }
+  // }
+
+  Future<void> deleteFacultyUser(String uid) async {
+    try {
+      // Delete from Realtime Database first
+      await dbRefFaculty.child(uid).remove();
+
+      // Get the user from Firebase Auth
       User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
+
+      // Re-authenticate if needed (this might be necessary for security-sensitive operations)
+      if (user != null && user.uid == uid) {
         await user.delete();
       }
 
-      // Navigate to the registration screen
-      Get.offAll(() => StudentRegistrationScreen());
-
-      Get.snackbar("Success", "User deleted successfully",
+      Get.snackbar("Success", "Faculty deleted successfully",
           snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
-      Get.snackbar("Error", "Failed to delete user: $e",
+      Get.snackbar("Error", "Failed to delete faculty: $e",
           snackPosition: SnackPosition.BOTTOM);
+      throw e; // Re-throw to handle in the UI
+    }
+  }
+
+  Future<void> deleteStudentUser(String uid, String email, String spid) async {
+    try {
+      // First sign in as the student to be able to delete their auth account
+      UserCredential userCredential = await auth.signInWithEmailAndPassword(
+        email: email,
+        password: spid,
+      );
+
+      // Delete from Realtime Database
+      await dbRefStudent.child(uid).remove();
+
+      // Delete the authentication account
+      await userCredential.user?.delete();
+
+      Get.snackbar("Success", "Student deleted successfully",
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+    } catch (e) {
+      Get.snackbar("Error", "Failed to delete student: $e",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.BOTTOM);
+      throw e;
     }
   }
 }

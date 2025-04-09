@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
 import '../../../../core/utils/colors.dart';
 
 class AdminGalleryScreen extends StatefulWidget {
@@ -89,25 +91,25 @@ class _AdminGalleryScreenState extends State<AdminGalleryScreen> {
   // Show Confirmation Dialog
   Future<bool> _showConfirmationDialog() async {
     return await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Confirm Deletion'),
-        content: Text(
-            'Are you sure you want to delete ${_selectedImages.length} selected images?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text('Cancel'),
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Confirm Deletion'),
+            content: Text(
+                'Are you sure you want to delete ${_selectedImages.length} selected images?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('Cancel'),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColor.appBackGroundColor),
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text('Delete', style: TextStyle(color: Colors.white)),
+              ),
+            ],
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                backgroundColor: AppColor.appBackGroundColor),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text('Delete', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    ) ??
+        ) ??
         false;
   }
 
@@ -117,9 +119,13 @@ class _AdminGalleryScreenState extends State<AdminGalleryScreen> {
       appBar: AppBar(
         title: Text(
           'Admin Gallery',
-          style: TextStyle(color: Colors.white), // Text color set to white
+          style: TextStyle(color: Colors.white),
+          // Text color set to white
         ),
         backgroundColor: AppColor.primaryColor,
+        leading: BackButton(
+          color: AppColor.whiteColor,
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.delete, color: Colors.white),
@@ -158,10 +164,10 @@ class _AdminGalleryScreenState extends State<AdminGalleryScreen> {
                 }
 
                 Map<dynamic, dynamic> images =
-                snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
+                    snapshot.data!.snapshot.value as Map<dynamic, dynamic>;
 
                 List<MapEntry<dynamic, dynamic>> imageList =
-                images.entries.toList();
+                    images.entries.toList();
 
                 return GridView.builder(
                   padding: EdgeInsets.all(10),

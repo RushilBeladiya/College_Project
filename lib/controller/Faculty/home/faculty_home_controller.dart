@@ -1,6 +1,10 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:college_project/models/faculty_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -27,6 +31,31 @@ class FacultyHomeController extends GetxController
     fetchFacultyData();
     fetchStudents();
     fetchFacultyListData();
+  }
+  Future<void> updateFacultyProfileImage(String imageUrl) async {
+    try {
+      String uid = facultyModel.value.uid;
+      await FirebaseDatabase.instance
+          .ref()
+          .child('faculty')
+          .child(uid)
+          .update({'profileImageUrl': imageUrl});
+
+      facultyModel.value.profileImageUrl = imageUrl;
+      facultyModel.refresh();
+    } catch (e) {
+      throw e;
+    }
+  }
+  Future<String> uploadImageToStorage(File imageFile) async {
+    try {
+      String fileName = 'faculty_images/${facultyModel.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
+      await storageRef.putFile(imageFile);
+      return await storageRef.getDownloadURL();
+    } catch (e) {
+      throw e;
+    }
   }
 
   Future<void> fetchFacultyData() async {

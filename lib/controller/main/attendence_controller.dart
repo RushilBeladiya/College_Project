@@ -6,9 +6,9 @@ import '../../models/faculty_model.dart';
 
 class AttendanceController extends GetxController {
   final DatabaseReference dbRef =
-  FirebaseDatabase.instance.ref().child('attendance');
+      FirebaseDatabase.instance.ref().child('attendance');
   final DatabaseReference classRef =
-  FirebaseDatabase.instance.ref().child('classes');
+      FirebaseDatabase.instance.ref().child('classes');
 
   // Mark attendance for a student
   Future<void> markAttendance(String stream, String semester, String division,
@@ -74,7 +74,7 @@ class AttendanceController extends GetxController {
       if (event.snapshot.value != null &&
           event.snapshot.value is Map<dynamic, dynamic>) {
         Map<dynamic, dynamic> data =
-        event.snapshot.value as Map<dynamic, dynamic>;
+            event.snapshot.value as Map<dynamic, dynamic>;
 
         data.forEach((key, value) {
           if (value['semester'] == semester && value['division'] == division) {
@@ -107,14 +107,14 @@ class AttendanceController extends GetxController {
         'division': division,
         'students': students
             .map((student) => {
-          'id': student['id'],
-          'firstName': student['firstName'],
-          'lastName': student['lastName'],
-          'stream': student['stream'],
-          'semester': student['semester'],
-          'division': student['division'],
-          'spid': student['spid'], // Ensure numeric SPID is included
-        })
+                  'id': student['id'],
+                  'firstName': student['firstName'],
+                  'lastName': student['lastName'],
+                  'stream': student['stream'],
+                  'semester': student['semester'],
+                  'division': student['division'],
+                  'spid': student['spid'], // Ensure numeric SPID is included
+                })
             .toList(),
       });
       return classId;
@@ -131,7 +131,7 @@ class AttendanceController extends GetxController {
       if (event.snapshot.value != null &&
           event.snapshot.value is Map<dynamic, dynamic>) {
         Map<dynamic, dynamic> data =
-        event.snapshot.value as Map<dynamic, dynamic>;
+            event.snapshot.value as Map<dynamic, dynamic>;
 
         data.forEach((key, value) {
           classes.add({
@@ -187,39 +187,39 @@ class AttendanceController extends GetxController {
   }
 
   // Fetch attendance records for a specific subject
-  Future<List<Map<String, dynamic>>> fetchAttendanceRecords(
-      String stream, String semester, String division, String subjectId) async {
-    List<Map<String, dynamic>> records = [];
-    try {
-      DatabaseEvent event = await dbRef
-          .child(stream)
-          .child(semester)
-          .child(division)
-          .child(subjectId)
-          .once();
+  // Future<List<Map<String, dynamic>>> fetchAttendanceRecords(
+  //     String stream, String semester, String division, String subjectId) async {
+  //   List<Map<String, dynamic>> records = [];
+  //   try {
+  //     DatabaseEvent event = await dbRef
+  //         .child(stream)
+  //         .child(semester)
+  //         .child(division)
+  //         .child(subjectId)
+  //         .once();
 
-      if (event.snapshot.value != null &&
-          event.snapshot.value is Map<dynamic, dynamic>) {
-        Map<dynamic, dynamic> data =
-        event.snapshot.value as Map<dynamic, dynamic>;
+  //     if (event.snapshot.value != null &&
+  //         event.snapshot.value is Map<dynamic, dynamic>) {
+  //       Map<dynamic, dynamic> data =
+  //       event.snapshot.value as Map<dynamic, dynamic>;
 
-        data.forEach((date, attendance) {
-          if (attendance is Map<dynamic, dynamic>) {
-            attendance.forEach((spid, record) {
-              records.add({
-                'date': date,
-                'spid': spid.toString(),
-                'status': record['status'],
-              });
-            });
-          }
-        });
-      }
-    } catch (e) {
-      Get.snackbar("Error", "Failed to fetch attendance records: $e");
-    }
-    return records;
-  }
+  //       data.forEach((date, attendance) {
+  //         if (attendance is Map<dynamic, dynamic>) {
+  //           attendance.forEach((spid, record) {
+  //             records.add({
+  //               'date': date,
+  //               'spid': spid.toString(),
+  //               'status': record['status'],
+  //             });
+  //           });
+  //         }
+  //       });
+  //     }
+  //   } catch (e) {
+  //     Get.snackbar("Error", "Failed to fetch attendance records: $e");
+  //   }
+  //   return records;
+  // }
 
   Future<FacultyModel?> getFacultyByPhone(String phoneNumber) async {
     DatabaseReference ref = FirebaseDatabase.instance.ref("faculty");
@@ -227,7 +227,7 @@ class AttendanceController extends GetxController {
     final snapshot = await ref.get();
     if (snapshot.exists) {
       Map<String, dynamic> facultyData =
-      Map<String, dynamic>.from(snapshot.value as Map);
+          Map<String, dynamic>.from(snapshot.value as Map);
 
       for (var key in facultyData.keys) {
         var faculty = facultyData[key];
