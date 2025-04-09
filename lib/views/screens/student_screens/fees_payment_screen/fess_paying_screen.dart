@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pw; // Add missing import for PDF widgets
 import 'package:permission_handler/permission_handler.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
@@ -203,21 +204,22 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
     );
   }
 
-  void _openRazorpay() {
+  Future<void> _openRazorpay() async {
     final student = studentHomeController.currentStudent.value;
 
-    var options = {
-      'key': 'rzp_test_4YGQ9DJHoBw5M3',
-      'amount': int.parse(_amount) * 100,
-      'name': 'SASCMA',
-      'description': 'Fee Payment',
-      'prefill': {
-        'contact': student.phoneNumber,
-        'email': student.email,
-      },
-    };
-
     try {
+      final amount = int.parse(_amount) * 100; // Parse amount safely
+      var options = {
+        'key': 'rzp_test_4YGQ9DJHoBw5M3',
+        'amount': amount,
+        'name': 'SASCMA',
+        'description': 'Fee Payment',
+        'prefill': {
+          'contact': student.phoneNumber,
+          'email': student.email,
+        },
+      };
+
       _razorpay.open(options);
     } catch (e) {
       print("Error opening Razorpay: $e");
@@ -232,25 +234,12 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
   }
 
   Future<void> _downloadAndOpenReceipt() async {
-    if (_transactionId == null || _paymentDetails == null) {
-      Get.snackbar(
-        'Error',
-        'No payment details available to generate receipt',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     try {
-      // final pdfBytes = await _generatePdf();
-
-      // final file = await _savePdfToStorage(pdfBytes);
-
-      // await _openPdfFile(file);
+      final pdfBytes = await _generatePdf(); // Ensure PDF is generated
+      final file = await _savePdfToStorage(pdfBytes); // Save PDF to storage
+      await _openPdfFile(file); // Open the saved PDF file
 
       Get.snackbar(
         'Success',
@@ -272,67 +261,72 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
     }
   }
 
-  // Future<Uint8List> _generatePdf() async {
-  //   final student = studentHomeController.currentStudent.value;
-  //   final paymentDate = DateTime.parse(_paymentDetails!['timestamp']);
-  //
-  //   final pdf = pw.Document();
-  //
-  //   pdf.addPage(
-  //     pw.Page(
-  //       build: (pw.Context context) => pw.Column(
-  //         crossAxisAlignment: pw.CrossAxisAlignment.start,
-  //         children: [
-  //           pw.Center(
-  //             child: pw.Text(
-  //               'SASCMA FEE RECEIPT',
-  //               style: pw.TextStyle(
-  //                 fontSize: 24,
-  //                 fontWeight: pw.FontWeight.bold,
-  //               ),
-  //             ),
-  //           ),
-  //           pw.SizedBox(height: 20),
-  //           pw.Text('Receipt No: $_transactionId'),
-  //           pw.Text('Date: ${_formatDate(paymentDate)}'),
-  //           pw.Divider(),
-  //           pw.SizedBox(height: 20),
-  //           pw.Text('Student Name: ${student.firstName} ${student.lastName}',
-  //               style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-  //           pw.Text('SPID: ${student.spid}'),
-  //           pw.Text('Stream: ${student.stream}'),
-  //           pw.Text('Semester: ${student.semester}-${student.division}'),
-  //           pw.SizedBox(height: 20),
-  //           pw.Divider(),
-  //           pw.SizedBox(height: 20),
-  //           pw.Row(
-  //             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-  //             children: [
-  //               pw.Text('Amount Paid:',
-  //                   style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-  //               pw.Text('₹$_amount',
-  //                   style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-  //             ],
-  //           ),
-  //           pw.SizedBox(height: 10),
-  //           pw.Text('Payment Method: ${_paymentDetails!['method']}'),
-  //           pw.SizedBox(height: 30),
-  //           pw.Center(
-  //             child: pw.Text(
-  //               'Thank You!',
-  //               style: pw.TextStyle(
-  //                 fontSize: 18,
-  //                 fontWeight: pw.FontWeight.bold,
-  //               ),
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  //
-  //   return pdf.save();
-  // }
+  Future<Uint8List> _generatePdf() async {
+    if (_paymentDetails == null) {
+      throw Exception(
+          'Payment details are missing'); // Ensure _paymentDetails is not null
+    }
+
+    final student = studentHomeController.currentStudent.value;
+    final paymentDate = DateTime.parse(_paymentDetails!['timestamp']);
+
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Center(
+              child: pw.Text(
+                'SASCMA FEE RECEIPT',
+                style: pw.TextStyle(
+                  fontSize: 24,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+            pw.SizedBox(height: 20),
+            pw.Text('Receipt No: $_transactionId'),
+            pw.Text('Date: ${_formatDate(paymentDate)}'),
+            pw.Divider(),
+            pw.SizedBox(height: 20),
+            pw.Text('Student Name: ${student.firstName} ${student.lastName}',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.Text('SPID: ${student.spid}'),
+            pw.Text('Stream: ${student.stream}'),
+            pw.Text('Semester: ${student.semester}-${student.division}'),
+            pw.SizedBox(height: 20),
+            pw.Divider(),
+            pw.SizedBox(height: 20),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text('Amount Paid:',
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.Text('₹$_amount',
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+              ],
+            ),
+            pw.SizedBox(height: 10),
+            pw.Text('Payment Method: ${_paymentDetails!['method']}'),
+            pw.SizedBox(height: 30),
+            pw.Center(
+              child: pw.Text(
+                'Thank You!',
+                style: pw.TextStyle(
+                  fontSize: 18,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    return pdf.save();
+  }
 
   Future<File> _savePdfToStorage(Uint8List pdfBytes) async {
     if (!await _requestStoragePermissions()) {
@@ -367,8 +361,11 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
       }
       return await Permission.storage.isGranted &&
           await Permission.manageExternalStorage.isGranted;
+    } else if (Platform.isIOS) {
+      // Handle iOS-specific permissions if needed
+      return true;
     }
-    return true;
+    return false;
   }
 
   Future<void> _openPdfFile(File file) async {
@@ -463,11 +460,16 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
       backgroundColor: AppColor.appBackGroundColor,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Fee Payment'),
+        title: const Text(
+          'Fee Payment',
+          style:
+              TextStyle(color: Colors.white), // AppBar text color set to white
+        ),
         centerTitle: true,
         backgroundColor: AppColor.primaryColor,
         elevation: 0,
-        leading: BackButton(),
+        leading: BackButton(
+            color: Colors.white), // Back button icon color set to white
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: _isLoading
@@ -604,6 +606,8 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
+                                    color:
+                                        Colors.white, // Set text color to white
                                   ),
                                 ),
                               ),
@@ -622,8 +626,14 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
                               Expanded(
                                 child: ElevatedButton.icon(
                                   onPressed: _downloadAndOpenReceipt,
-                                  icon: Icon(Icons.download),
-                                  label: Text('Download Receipt'),
+                                  icon:
+                                      Icon(Icons.download, color: Colors.white),
+                                  label: Text(
+                                    'Download Receipt',
+                                    style: TextStyle(
+                                        color: Colors
+                                            .white), // Set text color to white
+                                  ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColor.primaryColor,
                                     padding: EdgeInsets.symmetric(vertical: 12),
@@ -637,8 +647,14 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
                               Expanded(
                                 child: ElevatedButton.icon(
                                   onPressed: _viewPaymentDetails,
-                                  icon: Icon(Icons.remove_red_eye),
-                                  label: Text('View Details'),
+                                  icon: Icon(Icons.remove_red_eye,
+                                      color: Colors.white),
+                                  label: Text(
+                                    'View Details',
+                                    style: TextStyle(
+                                        color: Colors
+                                            .white), // Set text color to white
+                                  ),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColor.primaryColor,
                                     padding: EdgeInsets.symmetric(vertical: 12),
