@@ -48,6 +48,40 @@ class AuthController extends GetxController {
     super.onClose();
   }
 
+  void startEmailVerificationAutoChecker() {
+    _timer?.cancel(); // Cancel any existing timer
+
+    _timer = Timer.periodic(Duration(seconds: 3), (timer) async {
+      await checkEmailVerified();
+      if (isVerified.value) {
+        timer.cancel();
+        Get.snackbar("Email Verified", "Your email has been verified!",
+            backgroundColor: Colors.green, colorText: Colors.white);
+        // You can navigate the user to their respective dashboard here
+        final currentUser = auth.currentUser;
+        if (currentUser != null) {
+          final uid = currentUser.uid;
+
+          // Check which role this UID belongs to
+          final studentSnapshot = await dbRefStudent.child(uid).get();
+          final facultySnapshot = await dbRefFaculty.child(uid).get();
+          final adminSnapshot = await dbRefAdmin.child(uid).get();
+
+          if (studentSnapshot.exists) {
+            Get.offAll(() => HomeScreen()); // Student home
+          } else if (facultySnapshot.exists) {
+            Get.offAll(() => FacultyHomeScreen()); // Faculty home
+          } else if (adminSnapshot.exists) {
+            Get.offAll(() => AdminHomeScreen()); // Admin home
+          } else {
+            Get.snackbar("Error", "User role not recognized.",
+                backgroundColor: Colors.red, colorText: Colors.white);
+          }
+        }
+      }
+    });
+  }
+
   Future<void> checkEmailVerified() async {
     try {
       isChecking.value = true;

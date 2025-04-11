@@ -217,8 +217,9 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                                                     .instance
                                                     .isEmailVerified
                                                     .value
-                                                ? Icon(Icons.check_circle,
-                                                    color: Colors.green)
+                                                ? Icon(Icons.verified_rounded,
+                                                    color:
+                                                        AppColor.primaryColor)
                                                 : ElevatedButton(
                                                     onPressed: AuthController
                                                             .instance
@@ -387,8 +388,9 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                                                     .instance
                                                     .isEmailVerified
                                                     .value
-                                                ? Icon(Icons.check_circle,
-                                                    color: Colors.green)
+                                                ? Icon(Icons.verified_rounded,
+                                                    color:
+                                                        AppColor.primaryColor)
                                                 : ElevatedButton(
                                                     onPressed: AuthController
                                                             .instance
