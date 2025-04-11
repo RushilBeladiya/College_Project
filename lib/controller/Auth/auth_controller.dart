@@ -38,6 +38,10 @@ class AuthController extends GetxController {
   var countdown = 0.obs; // Countdown timer
   Timer? _timer;
 
+  var isEmailVerified = false.obs;
+  var isTimerRunning = false.obs;
+  var remainingSeconds = 0.obs;
+
   @override
   void onClose() {
     _timer?.cancel();
@@ -91,6 +95,47 @@ class AuthController extends GetxController {
       print("Error sending verification email: $e");
     } finally {
       isChecking.value = false;
+    }
+  }
+
+  Future<void> sendVerificationEmailWithTimer() async {
+    if (auth.currentUser == null) return;
+
+    try {
+      await auth.currentUser!.sendEmailVerification();
+      isTimerRunning.value = true;
+      remainingSeconds.value = 60; // Set timer duration (e.g., 60 seconds)
+
+      Timer.periodic(Duration(seconds: 1), (timer) {
+        if (remainingSeconds.value > 0) {
+          remainingSeconds.value--;
+        } else {
+          isTimerRunning.value = false;
+          timer.cancel();
+        }
+      });
+
+      // Check email verification status periodically
+      Timer.periodic(Duration(seconds: 3), (timer) async {
+        await checkEmailVerificationStatus();
+        if (isEmailVerified.value) {
+          timer.cancel();
+        }
+      });
+    } catch (e) {
+      isTimerRunning.value = false; // Reset timer state on error
+      Get.snackbar("Error", "Failed to send verification email: $e",
+          backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
+
+  Future<void> checkEmailVerificationStatus() async {
+    try {
+      await auth.currentUser?.reload();
+      isEmailVerified.value = auth.currentUser?.emailVerified ?? false;
+    } catch (e) {
+      Get.snackbar("Error", "Failed to check email verification: $e",
+          backgroundColor: Colors.red, colorText: Colors.white);
     }
   }
 

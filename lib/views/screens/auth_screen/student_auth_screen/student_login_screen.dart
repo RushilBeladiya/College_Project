@@ -1,10 +1,10 @@
 import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/core/utils/colors.dart';
-import 'package:college_project/views/screens/auth_screen/student_auth_screen/widget/email_verification_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+
 import '../../../../core/utils/images.dart';
 import '../admin_auth_screen/admin_login_screen.dart';
 
@@ -213,9 +213,43 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                                             prefixIcon: Icon(
                                                 Icons.email_rounded,
                                                 color: AppColor.primaryColor),
-                                            suffixIcon:
-                                                EmailVerificationWidget(),
-                                            // ✅ Use separate widget here
+                                            suffixIcon: Obx(() => AuthController
+                                                    .instance
+                                                    .isEmailVerified
+                                                    .value
+                                                ? Icon(Icons.check_circle,
+                                                    color: Colors.green)
+                                                : ElevatedButton(
+                                                    onPressed: AuthController
+                                                            .instance
+                                                            .isTimerRunning
+                                                            .value
+                                                        ? null
+                                                        : () async {
+                                                            await AuthController
+                                                                .instance
+                                                                .sendVerificationEmailWithTimer();
+                                                          },
+                                                    child: Text(AuthController
+                                                            .instance
+                                                            .isTimerRunning
+                                                            .value
+                                                        ? "${AuthController.instance.remainingSeconds.value}s"
+                                                        : "Verify"),
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          AppColor.primaryColor,
+                                                      foregroundColor:
+                                                          Colors.white,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              horizontal: 12.w,
+                                                              vertical: 5.h),
+                                                      textStyle: TextStyle(
+                                                          fontSize: 12.sp),
+                                                    ),
+                                                  )),
                                             contentPadding:
                                                 EdgeInsets.symmetric(
                                                     horizontal: 12.w,
@@ -349,9 +383,43 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                                             prefixIcon: Icon(
                                                 Icons.email_rounded,
                                                 color: AppColor.primaryColor),
-                                            suffixIcon:
-                                                EmailVerificationWidget(),
-                                            // ✅ Use separate widget here
+                                            suffixIcon: Obx(() => AuthController
+                                                    .instance
+                                                    .isEmailVerified
+                                                    .value
+                                                ? Icon(Icons.check_circle,
+                                                    color: Colors.green)
+                                                : ElevatedButton(
+                                                    onPressed: AuthController
+                                                            .instance
+                                                            .isTimerRunning
+                                                            .value
+                                                        ? null
+                                                        : () async {
+                                                            await AuthController
+                                                                .instance
+                                                                .sendVerificationEmailWithTimer();
+                                                          },
+                                                    child: Text(AuthController
+                                                            .instance
+                                                            .isTimerRunning
+                                                            .value
+                                                        ? "${AuthController.instance.remainingSeconds.value}s"
+                                                        : "Verify"),
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          AppColor.primaryColor,
+                                                      foregroundColor:
+                                                          Colors.white,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              horizontal: 12.w,
+                                                              vertical: 5.h),
+                                                      textStyle: TextStyle(
+                                                          fontSize: 12.sp),
+                                                    ),
+                                                  )),
                                             contentPadding:
                                                 EdgeInsets.symmetric(
                                                     horizontal: 12.w,
