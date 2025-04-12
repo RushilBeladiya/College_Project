@@ -3,6 +3,7 @@ import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/controller/Faculty/home/faculty_home_controller.dart';
 import 'package:college_project/controller/Student/home/student_home_controller.dart';
 import 'package:college_project/core/utils/images.dart';
+import 'package:college_project/views/screens/administrator_screens/settings/admin_settings_screen.dart';
 import 'package:college_project/views/screens/administrator_screens/staff_list_screen/staff_list_screen.dart';
 import 'package:college_project/views/screens/gallery_main_screen/gallery_main_screen.dart';
 import 'package:college_project/views/screens/student_screens/Student_lectures_view_screen.dart';
@@ -23,7 +24,6 @@ import 'package:share_plus/share_plus.dart';
 import '../../../../../controller/Auth/dateTimeController.dart';
 import '../../../../../controller/main/syllabus_controller.dart';
 import '../../../../../core/utils/colors.dart';
-import '../../setting_screen/settings_screen.dart';
 import '../../setting_screen/webview_screen.dart';
 
 class DashBoardScreen extends StatefulWidget {
@@ -129,7 +129,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                         size: 22.sp,
                       ),
                       onPressed: () async {
-                        await Get.to(() => const SettingsScreen());
+                        await Get.to(() => AdminSettingsScreen());
                       },
                     ),
                   ],
@@ -452,8 +452,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 leading: Icon(Icons.settings),
                 title: Text('Settings'),
                 onTap: () async {
-                  await Get.to(
-                      () => const SettingsScreen()); // Close the drawer
+                  await Get.to(() => AdminSettingsScreen()); // Close the drawer
                 },
               ),
             ),

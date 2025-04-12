@@ -24,7 +24,7 @@ class AdminSettingsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColor.primaryColor,
         title:
-            const Text('Admin Settings', style: TextStyle(color: Colors.white)),
+            const Text('Setting Screen', style: TextStyle(color: Colors.white)),
         centerTitle: true,
         leading: BackButton(color: Colors.white),
       ),
@@ -86,26 +86,159 @@ class AdminSettingsScreen extends StatelessWidget {
   }
 
   Widget _buildProfileSection() {
-    return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: AppColor.primaryColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      margin: EdgeInsets.all(16.w),
-      child: Row(
-        children: [
-          Obx(() => CircleAvatar(
+    return FutureBuilder<String>(
+      future: authController.getCurrentUserRole(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+              child: Text("Error loading user role: ${snapshot.error}"));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(child: Text("No role data available"));
+        }
+
+        String role = snapshot.data!;
+        if (role == "student") {
+          return _buildStudentProfile();
+        } else if (role == "faculty") {
+          return _buildFacultyProfile();
+        } else if (role == "admin") {
+          return _buildAdminProfile();
+        } else {
+          return Center(child: Text("Unknown role: $role"));
+        }
+      },
+    );
+  }
+
+  Widget _buildStudentProfile() {
+    return Obx(() {
+      final student = authController.currentStudent.value;
+      if (student.uid.isEmpty) {
+        return Center(
+          child: Text(
+            "No student data available",
+            style: TextStyle(color: AppColor.primaryColor, fontSize: 16.sp),
+          ),
+        );
+      }
+      return Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: AppColor.primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        margin: EdgeInsets.all(16.w),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 35.r,
+              backgroundImage: student.profileImageUrl.isNotEmpty
+                  ? NetworkImage(student.profileImageUrl)
+                  : const AssetImage(AppImage.user) as ImageProvider,
+            ),
+            SizedBox(width: 15.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${student.firstName} ${student.surName}",
+                    style:
+                        TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 5.h),
+                  Text(
+                    "Student",
+                    style: TextStyle(
+                        fontSize: 14.sp, color: AppColor.primaryColor),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildFacultyProfile() {
+    return Obx(() {
+      final faculty = authController.currentFaculty.value;
+      if (faculty.uid.isEmpty) {
+        return Center(
+          child: Text(
+            "No faculty data available",
+            style: TextStyle(color: AppColor.primaryColor, fontSize: 16.sp),
+          ),
+        );
+      }
+      return Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: AppColor.primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        margin: EdgeInsets.all(16.w),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 35.r,
+              backgroundImage: faculty.profileImageUrl.isNotEmpty
+                  ? NetworkImage(faculty.profileImageUrl)
+                  : const AssetImage(AppImage.user) as ImageProvider,
+            ),
+            SizedBox(width: 15.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${faculty.firstName} ${faculty.lastName}",
+                    style:
+                        TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 5.h),
+                  Text(
+                    "Faculty",
+                    style: TextStyle(
+                        fontSize: 14.sp, color: AppColor.primaryColor),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildAdminProfile() {
+    return Obx(() => Container(
+          padding: EdgeInsets.all(20.w),
+          decoration: BoxDecoration(
+            color: AppColor.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          margin: EdgeInsets.all(16.w),
+          child: Row(
+            children: [
+              CircleAvatar(
                 radius: 35.r,
                 backgroundImage:
                     adminController.adminModel.value.profileImageUrl.isNotEmpty
                         ? NetworkImage(
                             adminController.adminModel.value.profileImageUrl)
                         : const AssetImage(AppImage.user) as ImageProvider,
-              )),
-          SizedBox(width: 15.w),
-          Expanded(
-            child: Obx(() => Column(
+              ),
+              SizedBox(width: 15.w),
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -120,11 +253,11 @@ class AdminSettingsScreen extends StatelessWidget {
                           fontSize: 14.sp, color: AppColor.primaryColor),
                     ),
                   ],
-                )),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 
   Widget _buildSectionTitle(String title) {

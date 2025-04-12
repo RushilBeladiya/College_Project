@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:college_project/views/screens/administrator_screens/settings/admin_settings_screen.dart';
 import 'package:college_project/views/screens/student_screens/attendance_screens/student_attendance_view_screen.dart';
 import 'package:college_project/views/screens/student_screens/fees_payment_screen/fess_paying_screen.dart';
 import 'package:college_project/views/screens/student_screens/home/bottom_navigation_screen/profile_screen.dart';
@@ -12,7 +13,6 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../models/student_model.dart';
 import '../../../views/screens/student_screens/home/bottom_navigation_screen/dash_board_screen.dart';
-import '../../../views/screens/student_screens/setting_screen/settings_screen.dart';
 
 class StudentHomeController extends GetxController {
   RxInt bottomScreenIndex = 2.obs;
@@ -64,7 +64,7 @@ class StudentHomeController extends GetxController {
     const StudentAttendanceViewScreen(),
     const DashBoardScreen(),
     FeePaymentScreen(),
-    const SettingsScreen(),
+    AdminSettingsScreen(),
   ].obs;
 
   var currentStudent = StudentModel(

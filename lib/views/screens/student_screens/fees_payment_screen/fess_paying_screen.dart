@@ -511,7 +511,7 @@ class _FeePaymentScreenState extends State<FeePaymentScreen> {
                         ),
                         SizedBox(height: 16),
                         Text(
-                          '${student.firstName} ${student.lastName}',
+                          '${student.firstName} ${student.surName}',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,

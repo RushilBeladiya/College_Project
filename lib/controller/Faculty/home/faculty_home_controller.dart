@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:college_project/models/faculty_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -9,10 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../Administrator/service/faculty_service.dart';
-class FacultyHomeController extends GetxController
-{
+
+class FacultyHomeController extends GetxController {
   final DatabaseReference dbRef =
-  FirebaseDatabase.instance.ref().child('faculty');
+      FirebaseDatabase.instance.ref().child('faculty');
   var facultyModel = FacultyModel(
     uid: '',
     firstName: '',
@@ -24,7 +23,6 @@ class FacultyHomeController extends GetxController
     profileImageUrl: '',
   ).obs;
 
-
   @override
   void onInit() {
     super.onInit();
@@ -32,6 +30,7 @@ class FacultyHomeController extends GetxController
     fetchStudents();
     fetchFacultyListData();
   }
+
   Future<void> updateFacultyProfileImage(String imageUrl) async {
     try {
       String uid = facultyModel.value.uid;
@@ -47,9 +46,11 @@ class FacultyHomeController extends GetxController
       throw e;
     }
   }
+
   Future<String> uploadImageToStorage(File imageFile) async {
     try {
-      String fileName = 'faculty_images/${facultyModel.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      String fileName =
+          'faculty_images/${facultyModel.value.uid}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       Reference storageRef = FirebaseStorage.instance.ref().child(fileName);
       await storageRef.putFile(imageFile);
       return await storageRef.getDownloadURL();
@@ -71,7 +72,8 @@ class FacultyHomeController extends GetxController
           var data = event.snapshot.value as Map<dynamic, dynamic>?;
           if (data != null) {
             facultyModel.value = FacultyModel.fromJson(data);
-            print("User Loaded: ${facultyModel.value.firstName} ${facultyModel.value.lastName}");
+            print(
+                "User Loaded: ${facultyModel.value.firstName} ${facultyModel.value.lastName}");
           } else {
             print("Failed to parse user data.");
           }
@@ -86,20 +88,20 @@ class FacultyHomeController extends GetxController
     }
   }
 
-
-
-
-
   var students = [].obs;
   var filteredStudents = [].obs;
   var searchQuery = ''.obs;
-  final DatabaseReference dbStudentListRef = FirebaseDatabase.instance.ref().child('student');
+  final DatabaseReference dbStudentListRef =
+      FirebaseDatabase.instance.ref().child('student');
 
   void fetchStudents() {
     dbStudentListRef.onValue.listen((event) {
       if (event.snapshot.value != null) {
-        Map<Object?, Object?> values = event.snapshot.value as Map<Object?, Object?>;
-        students.value = values.entries.map((e) => Map<String, dynamic>.from(e.value as Map)).toList();
+        Map<Object?, Object?> values =
+            event.snapshot.value as Map<Object?, Object?>;
+        students.value = values.entries
+            .map((e) => Map<String, dynamic>.from(e.value as Map))
+            .toList();
         filteredStudents.value = students;
       }
     });
@@ -111,7 +113,10 @@ class FacultyHomeController extends GetxController
       filteredStudents.value = students;
     } else {
       filteredStudents.value = students.where((student) {
-        return student['firstName'].toString().toLowerCase().contains(query.toLowerCase()) ||
+        return student['firstName']
+                .toString()
+                .toLowerCase()
+                .contains(query.toLowerCase()) ||
             student['spid'].toString().contains(query);
       }).toList();
     }
@@ -131,4 +136,3 @@ class FacultyHomeController extends GetxController
     }
   }
 }
-

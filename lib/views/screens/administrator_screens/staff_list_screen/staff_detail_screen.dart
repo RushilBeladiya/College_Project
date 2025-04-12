@@ -2,7 +2,6 @@ import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/core/utils/colors.dart';
 import 'package:college_project/models/faculty_model.dart';
 import 'package:college_project/views/screens/administrator_screens/staff_list_screen/staff_list_screen.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -15,14 +14,9 @@ class StaffDetailScreen extends StatelessWidget {
     final primaryColor = AppColor.primaryColor;
     final secondaryColor = primaryColor.withOpacity(0.6);
     final backgroundColor = AppColor.appBackGroundColor;
-    final textColor = AppColor.textColor;
 
-    return StreamBuilder<DatabaseEvent>(
-      stream: FirebaseDatabase.instance
-          .ref()
-          .child('faculty')
-          .child(faculty.uid)
-          .onValue,
+    return FutureBuilder<String>(
+      future: AuthController.instance.getCurrentUserRole(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
@@ -38,6 +32,23 @@ class StaffDetailScreen extends StatelessWidget {
           );
         }
 
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Scaffold(
+            backgroundColor: backgroundColor,
+            appBar: AppBar(
+              backgroundColor: primaryColor,
+              title:
+                  Text("Staff Details", style: TextStyle(color: Colors.white)),
+            ),
+            body: Center(
+              child: Text("Failed to load user role",
+                  style: TextStyle(color: Colors.red)),
+            ),
+          );
+        }
+
+        final currentUserRole = snapshot.data!;
+
         return Scaffold(
           backgroundColor: backgroundColor,
           appBar: AppBar(
@@ -51,14 +62,19 @@ class StaffDetailScreen extends StatelessWidget {
               ),
             ),
             actions: [
-              IconButton(
-                icon: Icon(Icons.edit, color: Colors.white),
-                onPressed: () => _showEditDialog(context),
-              ),
-              IconButton(
-                icon: Icon(Icons.delete, color: Colors.white),
-                onPressed: () => _showDeleteConfirmation(context),
-              ),
+              if (currentUserRole == 'admin' ||
+                  (currentUserRole == 'faculty' &&
+                      faculty.uid ==
+                          AuthController.instance.auth.currentUser?.uid))
+                IconButton(
+                  icon: Icon(Icons.edit, color: Colors.white),
+                  onPressed: () => _showEditDialog(context),
+                ),
+              if (currentUserRole == 'admin')
+                IconButton(
+                  icon: Icon(Icons.delete, color: Colors.white),
+                  onPressed: () => _showDeleteConfirmation(context),
+                ),
             ],
             iconTheme: IconThemeData(color: Colors.white),
           ),

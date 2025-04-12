@@ -1,7 +1,6 @@
 import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/core/utils/colors.dart';
 import 'package:college_project/models/student_model.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -15,12 +14,8 @@ class StudentDetailScreen extends StatelessWidget {
     final secondaryColor = primaryColor.withOpacity(0.6);
     final backgroundColor = AppColor.appBackGroundColor;
 
-    return StreamBuilder<DatabaseEvent>(
-      stream: FirebaseDatabase.instance
-          .ref()
-          .child('student')
-          .child(student.uid)
-          .onValue,
+    return FutureBuilder<String>(
+      future: AuthController.instance.getCurrentUserRole(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
@@ -36,6 +31,23 @@ class StudentDetailScreen extends StatelessWidget {
           );
         }
 
+        if (snapshot.hasError || !snapshot.hasData) {
+          return Scaffold(
+            backgroundColor: backgroundColor,
+            appBar: AppBar(
+              backgroundColor: primaryColor,
+              title: Text("Student Details",
+                  style: TextStyle(color: Colors.white)),
+            ),
+            body: Center(
+              child: Text("Failed to load user role",
+                  style: TextStyle(color: Colors.red)),
+            ),
+          );
+        }
+
+        final currentUserRole = snapshot.data!;
+
         return Scaffold(
           backgroundColor: backgroundColor,
           appBar: AppBar(
@@ -49,14 +61,16 @@ class StudentDetailScreen extends StatelessWidget {
               ),
             ),
             actions: [
-              IconButton(
-                icon: Icon(Icons.edit, color: Colors.white),
-                onPressed: () => _showEditDialog(context),
-              ),
-              IconButton(
-                icon: Icon(Icons.delete, color: Colors.white),
-                onPressed: () => _showDeleteConfirmation(context),
-              ),
+              if (currentUserRole == 'admin' || currentUserRole == 'faculty')
+                IconButton(
+                  icon: Icon(Icons.edit, color: Colors.white),
+                  onPressed: () => _showEditDialog(context),
+                ),
+              if (currentUserRole == 'admin' || currentUserRole == 'faculty')
+                IconButton(
+                  icon: Icon(Icons.delete, color: Colors.white),
+                  onPressed: () => _showDeleteConfirmation(context),
+                ),
             ],
             iconTheme: IconThemeData(color: Colors.white),
           ),
@@ -114,7 +128,7 @@ class StudentDetailScreen extends StatelessWidget {
                         ),
                         SizedBox(height: 16),
                         Text(
-                          "${student.firstName} ${student.lastName}",
+                          "${student.firstName} ${student.surName}",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 24,
@@ -391,30 +405,28 @@ class StudentDetailScreen extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () async {
                       try {
-                        Get.dialog(
-                          Center(
-                            child:
-                                CircularProgressIndicator(color: primaryColor),
-                          ),
-                          barrierDismissible: false,
-                        );
-
+                        // Perform delete operation
                         await AuthController.instance.deleteStudentUser(
                           student.uid,
                           student.email,
                           student.spid,
                         );
 
-                        Get.back(); // Close loading
-                        Get.back(); // Close confirmation dialog
+                        // Close confirmation dialog
+                        Get.back();
+
+                        // Show success message
                         Get.snackbar(
                           'Success',
                           'Student deleted successfully',
                           backgroundColor: Colors.green,
                           colorText: Colors.white,
                         );
+
+                        // Redirect to student list screen
+                        Get.offAllNamed('/studentListScreen');
                       } catch (e) {
-                        Get.back(); // Close loading
+                        // Show error message
                         Get.snackbar(
                           'Error',
                           'Failed to delete student: ${e.toString()}',

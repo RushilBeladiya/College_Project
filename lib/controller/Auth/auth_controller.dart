@@ -42,6 +42,32 @@ class AuthController extends GetxController {
   var isTimerRunning = false.obs;
   var remainingSeconds = 0.obs;
 
+  var currentStudent = StudentModel(
+    uid: '',
+    firstName: '',
+    lastName: '',
+    surName: '',
+    spid: '',
+    phoneNumber: '',
+    email: '',
+    stream: '',
+    semester: '',
+    division: '',
+    profileImageUrl: '',
+    status: '',
+  ).obs;
+
+  var currentFaculty = FacultyModel(
+    uid: '',
+    firstName: '',
+    lastName: '',
+    surName: '',
+    phoneNumber: '',
+    email: '',
+    position: '',
+    profileImageUrl: '',
+  ).obs;
+
   @override
   void onClose() {
     _timer?.cancel();
@@ -383,6 +409,118 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<void> fetchCurrentStudentData() async {
+    try {
+      User? user = auth.currentUser;
+      if (user != null) {
+        DatabaseEvent event = await dbRefStudent.child(user.uid).once();
+        if (event.snapshot.value != null) {
+          var data = event.snapshot.value as Map<dynamic, dynamic>?;
+          if (data != null) {
+            currentStudent.value = StudentModel.fromMap(data);
+          } else {
+            currentStudent.value = StudentModel(
+              uid: '',
+              firstName: '',
+              lastName: '',
+              surName: '',
+              spid: '',
+              phoneNumber: '',
+              email: '',
+              stream: '',
+              semester: '',
+              division: '',
+              profileImageUrl: '',
+              status: '',
+            ); // Reset to default if parsing fails
+          }
+        } else {
+          currentStudent.value = StudentModel(
+            uid: '',
+            firstName: '',
+            lastName: '',
+            surName: '',
+            spid: '',
+            phoneNumber: '',
+            email: '',
+            stream: '',
+            semester: '',
+            division: '',
+            profileImageUrl: '',
+            status: '',
+          ); // Reset to default if no data found
+        }
+      }
+    } catch (e) {
+      currentStudent.value = StudentModel(
+        uid: '',
+        firstName: '',
+        lastName: '',
+        surName: '',
+        spid: '',
+        phoneNumber: '',
+        email: '',
+        stream: '',
+        semester: '',
+        division: '',
+        profileImageUrl: '',
+        status: '',
+      ); // Reset to default on error
+      Get.snackbar("Error", "Failed to load student data",
+          backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
+
+  Future<void> fetchCurrentFacultyData() async {
+    try {
+      User? user = auth.currentUser;
+      if (user != null) {
+        DatabaseEvent event = await dbRefFaculty.child(user.uid).once();
+        if (event.snapshot.value != null) {
+          var data = event.snapshot.value as Map<dynamic, dynamic>?;
+          if (data != null) {
+            currentFaculty.value = FacultyModel.fromJson(data);
+          } else {
+            currentFaculty.value = FacultyModel(
+              uid: '',
+              firstName: '',
+              lastName: '',
+              surName: '',
+              phoneNumber: '',
+              email: '',
+              position: '',
+              profileImageUrl: '',
+            ); // Reset to default if parsing fails
+          }
+        } else {
+          currentFaculty.value = FacultyModel(
+            uid: '',
+            firstName: '',
+            lastName: '',
+            surName: '',
+            phoneNumber: '',
+            email: '',
+            position: '',
+            profileImageUrl: '',
+          ); // Reset to default if no data found
+        }
+      }
+    } catch (e) {
+      currentFaculty.value = FacultyModel(
+        uid: '',
+        firstName: '',
+        lastName: '',
+        surName: '',
+        phoneNumber: '',
+        email: '',
+        position: '',
+        profileImageUrl: '',
+      ); // Reset to default on error
+      Get.snackbar("Error", "Failed to load faculty data",
+          backgroundColor: Colors.red, colorText: Colors.white);
+    }
+  }
+
   Future<void> loginStudent(String email, String spid) async {
     try {
       await FirebaseAuth.instance.signOut();
@@ -403,6 +541,7 @@ class AuthController extends GetxController {
           );
 
           String uid = userCredential.user!.uid;
+          await fetchCurrentStudentData(); // Update currentStudent
           await checkEmailVerified();
           if (isVerified.value) {
             await saveUserSession(uid, email, "student");
@@ -420,7 +559,6 @@ class AuthController extends GetxController {
       }
     } catch (e) {
       Get.snackbar("Login Error", e.toString());
-      print(e);
     }
   }
 
@@ -444,6 +582,7 @@ class AuthController extends GetxController {
           );
 
           String uid = userCredential.user!.uid;
+          await fetchCurrentFacultyData(); // Update currentFaculty
           await checkEmailVerified();
           if (isVerified.value) {
             await saveUserSession(uid, email, "faculty");
@@ -452,7 +591,7 @@ class AuthController extends GetxController {
           } else {
             Get.snackbar(
                 "Error", "Please verify your email before logging in.");
-          } // Navigate to Faculty Dashboard
+          }
         } else {
           Get.snackbar("Login Error", "Incorrect phone number");
         }
@@ -462,7 +601,6 @@ class AuthController extends GetxController {
     } catch (e) {
       Get.snackbar("Login Error", e.toString(),
           backgroundColor: Colors.red, colorText: Colors.white);
-      print(e);
     }
   }
 
@@ -528,6 +666,11 @@ class AuthController extends GetxController {
     await prefs.setString('userId', uid);
     await prefs.setString('email', email);
     await prefs.setString('role', role);
+  }
+
+  Future<String> getCurrentUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('role') ?? 'student'; // Default to 'student'
   }
 
   // Future<void> deleteUser(String uid) async {
