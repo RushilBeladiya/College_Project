@@ -1,3 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+
 class StudentModel {
   String uid;
   String firstName;
@@ -59,5 +62,29 @@ class StudentModel {
       'profileImageUrl': profileImageUrl,
       'status': status,
     };
+  }
+
+  Future<void> updateStudent(Map<String, dynamic> data) async {
+    try {
+      final databaseRef = FirebaseDatabase.instance.ref();
+      await databaseRef.child('student').child(uid).update(data);
+    } catch (e) {
+      print('Error updating student: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteStudent() async {
+    try {
+      final databaseRef = FirebaseDatabase.instance.ref();
+      await databaseRef.child('student').child(uid).remove();
+
+      // Delete user from Authentication
+      final auth = FirebaseAuth.instance;
+      await auth.currentUser?.delete();
+    } catch (e) {
+      print('Error deleting student: $e');
+      rethrow;
+    }
   }
 }

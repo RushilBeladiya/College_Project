@@ -3,26 +3,27 @@ import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/controller/Faculty/home/faculty_home_controller.dart';
 import 'package:college_project/controller/Student/home/student_home_controller.dart';
 import 'package:college_project/core/utils/images.dart';
-import 'package:college_project/models/student_model.dart';
+import 'package:college_project/views/screens/administrator_screens/settings/admin_settings_screen.dart';
+import 'package:college_project/views/screens/administrator_screens/staff_list_screen/staff_list_screen.dart';
 import 'package:college_project/views/screens/gallery_main_screen/gallery_main_screen.dart';
+import 'package:college_project/views/screens/student_screens/Student_lectures_view_screen.dart';
 import 'package:college_project/views/screens/student_screens/announcement_screen/student_announcement_screen.dart';
-import 'package:college_project/views/screens/student_screens/fees_payment_screen/fess_paying_screen.dart';
+import 'package:college_project/views/screens/student_screens/attendance_screens/student_report_screen.dart';
+import 'package:college_project/views/screens/student_screens/event_screen/studenteventscreen.dart';
+import 'package:college_project/views/screens/student_screens/home/bottom_navigation_screen/profile_screen.dart';
 import 'package:college_project/views/screens/student_screens/home/college_info_screen.dart';
 import 'package:college_project/views/screens/student_screens/home/contact_us_screen.dart';
-import 'package:college_project/views/screens/auth_screen/student_auth_screen/student_registration_screen.dart';
-import 'package:college_project/views/screens/student_screens/home/bottom_navigation_screen/profile_screen.dart';
-import 'package:college_project/views/screens/student_screens/Student_lectures_view_screen.dart';
+import 'package:college_project/views/screens/student_screens/result_screen/resultscreen.dart';
 import 'package:college_project/views/screens/student_screens/syllabus_screen/student_syllabus_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:share_plus/share_plus.dart';
+
 import '../../../../../controller/Auth/dateTimeController.dart';
 import '../../../../../controller/main/syllabus_controller.dart';
 import '../../../../../core/utils/colors.dart';
-import '../../../administrator_screens/staff_list_screen.dart';
-import '../../setting_screen/settings_screen.dart';
 import '../../setting_screen/webview_screen.dart';
 
 class DashBoardScreen extends StatefulWidget {
@@ -35,19 +36,21 @@ class DashBoardScreen extends StatefulWidget {
 class _DashBoardScreenState extends State<DashBoardScreen> {
   final DateTimeController dateTimeController = Get.find();
   StudentHomeController homeController = Get.find();
-  FacultyHomeController facultyHomeController = Get.put(FacultyHomeController());
+  FacultyHomeController facultyHomeController =
+      Get.put(FacultyHomeController());
   final SyllabusController controller = Get.put(SyllabusController());
-  final AdminHomeController adminHomeController = Get.put(AdminHomeController());
+  final AdminHomeController adminHomeController =
+      Get.put(AdminHomeController());
 
   AuthController authController = Get.find();
+
+  // double overallAttendancePercentage = 0.0; // Add this variable
 
   @override
   void initState() {
     super.initState();
-    StudentModel studentModel = homeController.currentStudent.value;
-    print(
-        "----------------------${homeController.currentStudent.value.firstName}");
-    print("----------------------${studentModel.email}");
+    // homeController.fetchAttendanceRecords();
+    // homeController.calculateOverallAttendance();
   }
 
   @override
@@ -121,22 +124,12 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                     const Spacer(),
                     IconButton(
                       icon: Icon(
-                        Icons.person_pin,
-                        color: AppColor.whiteColor,
-                        size: 22.sp,
-                      ),
-                      onPressed: () async {
-                        await Get.to(() => const ProfileScreen());
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(
                         Icons.settings,
                         color: AppColor.whiteColor,
                         size: 22.sp,
                       ),
                       onPressed: () async {
-                        await Get.to(() => const SettingsScreen());
+                        await Get.to(() => AdminSettingsScreen());
                       },
                     ),
                   ],
@@ -152,17 +145,24 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 10.w),
                       child: Obx(
                         () => CircleAvatar(
-                          backgroundColor: AppColor.whiteColor,
+                          backgroundColor:
+                              AppColor.primaryColor.withOpacity(0.1),
                           radius: 32.r,
-                          child: CircleAvatar(
-                            radius: 30.r,
-                            backgroundImage: homeController.currentStudent.value
-                                    .profileImageUrl.isNotEmpty
-                                ? NetworkImage(homeController
-                                    .currentStudent.value.profileImageUrl)
-                                : const AssetImage(AppImage.user)
-                                    as ImageProvider,
-                          ),
+                          child: homeController.isLoading.value
+                              ? CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColor.primaryColor,
+                                )
+                              : CircleAvatar(
+                                  radius: 30.r,
+                                  backgroundImage: homeController.currentStudent
+                                          .value.profileImageUrl.isNotEmpty
+                                      ? NetworkImage(homeController
+                                          .currentStudent.value.profileImageUrl)
+                                      : const AssetImage(
+                                              'assets/college_image/avatar.png')
+                                          as ImageProvider,
+                                ),
                         ),
                       ),
                     ),
@@ -223,20 +223,33 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                             SizedBox(
                               height: 3.h,
                             ),
-                            LinearPercentIndicator(
-                              width: 140.w,
-                              lineHeight: 5.h,
-                              percent: 0.6,
-                              leading: Text(
-                                "60%",
-                                style: TextStyle(
-                                  color: AppColor.whiteColor,
-                                  fontSize: 10.sp,
+                            Obx(
+                              () => LinearPercentIndicator(
+                                width: 140.w,
+                                lineHeight: 5.h,
+                                percent: homeController
+                                        .overallAttendancePercentage.value /
+                                    100,
+                                leading: Text(
+                                  "${homeController.overallAttendancePercentage.value.toStringAsFixed(1)}%",
+                                  style: TextStyle(
+                                    color: AppColor.whiteColor,
+                                    fontSize: 10.sp,
+                                  ),
                                 ),
+                                barRadius: Radius.circular(10.r),
+                                backgroundColor: Colors.white,
+                                progressColor: homeController
+                                            .overallAttendancePercentage
+                                            .value >=
+                                        75
+                                    ? Colors.green
+                                    : homeController.overallAttendancePercentage
+                                                .value >=
+                                            65
+                                        ? Colors.red
+                                        : Colors.red.shade900,
                               ),
-                              barRadius: Radius.circular(10.r),
-                              backgroundColor: Colors.white,
-                              progressColor: Colors.orange,
                             ),
                           ],
                         ),
@@ -277,18 +290,16 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 GestureDetector(
                   onTap: () async {
                     await Get.to(() => StudentSyllabusScreen(
-                      semester:
-                      homeController.currentStudent.value.semester,
-                      stream:
-                      homeController.currentStudent.value.stream,
-                    ));
+                          semester:
+                              homeController.currentStudent.value.semester,
+                          stream: homeController.currentStudent.value.stream,
+                        ));
                   },
                   child: buildDashboardItem(
                     title: "Syllabus",
                     image: AppImage.subjects,
                   ),
                 ),
-
                 GestureDetector(
                   onTap: () async {
                     await Get.to(() => StaffListScreen());
@@ -298,29 +309,42 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                     image: AppImage.staffProfile,
                   ),
                 ),
-
-                buildDashboardItem(
-                  title: "Report",
-                  image: AppImage.report,
-                ),
-                buildDashboardItem(
-                  title: "Result",
-                  image: AppImage.result,
+                GestureDetector(
+                  onTap: () async {
+                    await Get.to(() => StudentReportScreen());
+                  },
+                  child: buildDashboardItem(
+                    title: "Report",
+                    image: AppImage.report,
+                  ),
                 ),
                 GestureDetector(
-                  onTap: (){
-                    Get.to(()=> StudentAnnouncementScreen());
+                  onTap: () async {
+                    await Get.to(() => StudentResultScreen());
+                  },
+                  child: buildDashboardItem(
+                    title: "Result",
+                    image: AppImage.result,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Get.to(() => StudentAnnouncementScreen());
                   },
                   child: buildDashboardItem(
                     title: "Notice",
                     image: AppImage.notice,
                   ),
                 ),
-                buildDashboardItem(
-                  title: "Event",
-                  image: AppImage.event,
+                GestureDetector(
+                  onTap: () {
+                    Get.to(() => StudentEventScreen());
+                  },
+                  child: buildDashboardItem(
+                    title: "Event",
+                    image: AppImage.event,
+                  ),
                 ),
-
                 GestureDetector(
                   onTap: () {
                     Get.to(() => GalleryScreen());
@@ -394,8 +418,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
               leading: Icon(Icons.person),
               title: const Text('Profile'),
               onTap: () async {
-                await Get.to(
-                    () => StudentRegistrationScreen()); // Close the drawer
+                await Get.to(() => ProfileScreen()); // Close the drawer
               },
             ),
             ListTile(
@@ -429,8 +452,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
                 leading: Icon(Icons.settings),
                 title: Text('Settings'),
                 onTap: () async {
-                  await Get.to(
-                      () => const SettingsScreen()); // Close the drawer
+                  await Get.to(() => AdminSettingsScreen()); // Close the drawer
                 },
               ),
             ),

@@ -1,10 +1,10 @@
 import 'package:college_project/controller/Auth/auth_controller.dart';
 import 'package:college_project/core/utils/colors.dart';
-import 'package:college_project/views/screens/auth_screen/student_auth_screen/widget/email_verification_widget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+
 import '../../../../core/utils/images.dart';
 import '../admin_auth_screen/admin_login_screen.dart';
 
@@ -127,10 +127,12 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                         indicator: BoxDecoration(
                           color: AppColor.primaryColor,
                           shape: BoxShape.rectangle,
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(18.r)),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(18.r)),
                         ),
                         labelColor: AppColor.whiteColor,
-                        labelStyle: TextStyle(fontSize: 14.sp,fontWeight: FontWeight.bold),
+                        labelStyle: TextStyle(
+                            fontSize: 14.sp, fontWeight: FontWeight.bold),
                         unselectedLabelColor: AppColor.primaryColor,
                         indicatorSize: TabBarIndicatorSize.tab,
                         indicatorColor: AppColor.primaryColor,
@@ -211,9 +213,44 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                                             prefixIcon: Icon(
                                                 Icons.email_rounded,
                                                 color: AppColor.primaryColor),
-                                            suffixIcon:
-                                                EmailVerificationWidget(),
-                                            // ✅ Use separate widget here
+                                            suffixIcon: Obx(() => AuthController
+                                                    .instance
+                                                    .isEmailVerified
+                                                    .value
+                                                ? Icon(Icons.verified_rounded,
+                                                    color:
+                                                        AppColor.primaryColor)
+                                                : ElevatedButton(
+                                                    onPressed: AuthController
+                                                            .instance
+                                                            .isTimerRunning
+                                                            .value
+                                                        ? null
+                                                        : () async {
+                                                            await AuthController
+                                                                .instance
+                                                                .sendVerificationEmailWithTimer();
+                                                          },
+                                                    child: Text(AuthController
+                                                            .instance
+                                                            .isTimerRunning
+                                                            .value
+                                                        ? "${AuthController.instance.remainingSeconds.value}s"
+                                                        : "Verify"),
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          AppColor.primaryColor,
+                                                      foregroundColor:
+                                                          Colors.white,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              horizontal: 12.w,
+                                                              vertical: 5.h),
+                                                      textStyle: TextStyle(
+                                                          fontSize: 12.sp),
+                                                    ),
+                                                  )),
                                             contentPadding:
                                                 EdgeInsets.symmetric(
                                                     horizontal: 12.w,
@@ -318,15 +355,15 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                                           maxLength: 40,
                                           buildCounter: (_,
                                               {required int currentLength,
-                                                required bool isFocused,
-                                                required int? maxLength}) {
+                                              required bool isFocused,
+                                              required int? maxLength}) {
                                             return null;
                                           },
                                           cursorColor: AppColor.primaryColor,
                                           controller: AuthController
                                               .instance.emailController,
                                           keyboardType:
-                                          TextInputType.emailAddress,
+                                              TextInputType.emailAddress,
                                           onChanged: (value) {
                                             AuthController.instance.email
                                                 .value = value.trim();
@@ -336,7 +373,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                                             if (email.isEmpty)
                                               return "Please enter your email.";
                                             if (!RegExp(
-                                                r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[a-zA-Z]+$")
+                                                    r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9]+\.[a-zA-Z]+$")
                                                 .hasMatch(email)) {
                                               return "Please enter a valid email.";
                                             }
@@ -347,13 +384,48 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                                             prefixIcon: Icon(
                                                 Icons.email_rounded,
                                                 color: AppColor.primaryColor),
-                                            suffixIcon:
-                                            EmailVerificationWidget(),
-                                            // ✅ Use separate widget here
+                                            suffixIcon: Obx(() => AuthController
+                                                    .instance
+                                                    .isEmailVerified
+                                                    .value
+                                                ? Icon(Icons.verified_rounded,
+                                                    color:
+                                                        AppColor.primaryColor)
+                                                : ElevatedButton(
+                                                    onPressed: AuthController
+                                                            .instance
+                                                            .isTimerRunning
+                                                            .value
+                                                        ? null
+                                                        : () async {
+                                                            await AuthController
+                                                                .instance
+                                                                .sendVerificationEmailWithTimer();
+                                                          },
+                                                    child: Text(AuthController
+                                                            .instance
+                                                            .isTimerRunning
+                                                            .value
+                                                        ? "${AuthController.instance.remainingSeconds.value}s"
+                                                        : "Verify"),
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          AppColor.primaryColor,
+                                                      foregroundColor:
+                                                          Colors.white,
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              horizontal: 12.w,
+                                                              vertical: 5.h),
+                                                      textStyle: TextStyle(
+                                                          fontSize: 12.sp),
+                                                    ),
+                                                  )),
                                             contentPadding:
-                                            EdgeInsets.symmetric(
-                                                horizontal: 12.w,
-                                                vertical: 10.h),
+                                                EdgeInsets.symmetric(
+                                                    horizontal: 12.w,
+                                                    vertical: 10.h),
                                             hintText: "Enter your email",
                                             hintStyle: TextStyle(
                                                 fontSize: 13.sp,
@@ -363,11 +435,11 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                                                   color: AppColor.primaryColor,
                                                   width: 1),
                                               borderRadius:
-                                              BorderRadius.circular(8.r),
+                                                  BorderRadius.circular(8.r),
                                             ),
                                             border: OutlineInputBorder(
                                               borderRadius:
-                                              BorderRadius.circular(8.r),
+                                                  BorderRadius.circular(8.r),
                                             ),
                                           ),
                                         ),
@@ -394,7 +466,6 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                                             }
 
                                             if (!RegExp(r'^[6-9]\d{9}$')
-
                                                 .hasMatch(phoneNumber)) {
                                               return ("Please enter a valid phone number.");
                                             }
@@ -446,8 +517,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                                 } else {
                                   if (facultyGlobalFormKey.currentState!
                                       .validate()) {
-                                    AuthController.instance
-                                        .loginFaculty(
+                                    AuthController.instance.loginFaculty(
                                       AuthController
                                           .instance.emailController.text
                                           .trim(),

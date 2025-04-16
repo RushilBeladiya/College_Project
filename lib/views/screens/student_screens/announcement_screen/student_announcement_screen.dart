@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../../../../controller/main/announcement_controller.dart';
 import '../../../../core/utils/colors.dart';
 
@@ -98,8 +99,8 @@ class _StudentAnnouncementScreenState extends State<StudentAnnouncementScreen> {
                       padding: const EdgeInsets.only(top: 8),
                       decoration: BoxDecoration(
                         border: Border(
-                          top: BorderSide(
-                              color: Colors.grey.shade300, width: 1),
+                          top:
+                              BorderSide(color: Colors.grey.shade300, width: 1),
                         ),
                       ),
                       child: Row(

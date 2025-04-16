@@ -1,10 +1,12 @@
+import 'package:college_project/controller/Administrator/home/admin_home_controller.dart';
 import 'package:college_project/controller/Auth/auth_controller.dart';
+import 'package:college_project/controller/main/network_controller.dart';
 import 'package:college_project/core/utils/colors.dart';
 import 'package:college_project/core/utils/routes.dart';
 import 'package:college_project/views/screens/auth_screen/student_auth_screen/student_login_screen.dart';
-import 'package:college_project/views/screens/student_screens/home/home_screen.dart';
 import 'package:college_project/views/screens/auth_screen/student_auth_screen/student_registration_screen.dart';
 import 'package:college_project/views/screens/splash_screen/splash_screen.dart';
+import 'package:college_project/views/screens/student_screens/home/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,11 +17,13 @@ import 'controller/Auth/dateTimeController.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await SharedPreferences.getInstance();
+  final sharedPreferences = await SharedPreferences.getInstance();
+  Get.put<SharedPreferences>(sharedPreferences);
   await Firebase.initializeApp();
+  Get.put(NetworkController());
   Get.put(AuthController());
   Get.put(DateTimeController());
+  Get.lazyPut<AdminHomeController>(() => AdminHomeController(), fenix: true);
 
   runApp(const MyApp());
 }
@@ -55,7 +59,8 @@ class _MyAppState extends State<MyApp> {
             GetPage(
                 name: Routes.registrationPage,
                 page: () => StudentRegistrationScreen()),
-            GetPage(name: Routes.loginPage, page: () => const StudentLoginScreen()),
+            GetPage(
+                name: Routes.loginPage, page: () => const StudentLoginScreen()),
             GetPage(name: Routes.homePage, page: () => HomeScreen()),
           ],
         );

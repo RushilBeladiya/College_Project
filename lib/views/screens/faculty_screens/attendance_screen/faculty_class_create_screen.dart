@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
 import '../../../../controller/main/attendence_controller.dart';
 import '../../../../core/utils/colors.dart';
 
@@ -16,7 +17,7 @@ class CreateClassScreen extends StatefulWidget {
 class _CreateClassScreenState extends State<CreateClassScreen> {
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref("classes");
   final AttendanceController _attendanceController =
-  Get.put(AttendanceController());
+      Get.put(AttendanceController());
 
   String? selectedStream, selectedSemester, selectedDivision, selectedSubject;
   List<Map<String, dynamic>> students = [];
@@ -138,7 +139,7 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
 
     if (event.snapshot.value != null) {
       Map<String, dynamic> classMap =
-      Map<String, dynamic>.from(event.snapshot.value as Map);
+          Map<String, dynamic>.from(event.snapshot.value as Map);
       bool classExists = classMap.values.any((classData) {
         return classData['subject'] == selectedSubject &&
             classData['division'] == selectedDivision;
@@ -174,8 +175,12 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     return Scaffold(
       backgroundColor: AppColor.appBackGroundColor,
       appBar: AppBar(
-        title: const Text('Create Class', style: TextStyle(fontSize: 20)),
+        title: const Text('Create Class',
+            style: TextStyle(fontSize: 20, color: Colors.white)),
         backgroundColor: AppColor.primaryColor,
+        leading: BackButton(
+          color: AppColor.whiteColor,
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -189,18 +194,18 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
               });
             }),
             _buildDropdownCard('Semester', semesters, selectedSemester,
-                    (value) {
-                  setState(() {
-                    selectedSemester = value;
-                    selectedSubject = null;
-                  });
-                }),
+                (value) {
+              setState(() {
+                selectedSemester = value;
+                selectedSubject = null;
+              });
+            }),
             _buildDropdownCard('Division', divisions, selectedDivision,
-                    (value) => setState(() => selectedDivision = value)),
+                (value) => setState(() => selectedDivision = value)),
             _buildDropdownCard('Subject', getSubjects(), selectedSubject,
-                    (value) {
-                  setState(() => selectedSubject = value);
-                }),
+                (value) {
+              setState(() => selectedSubject = value);
+            }),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -235,27 +240,27 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
             students.isEmpty
                 ? Center(child: Text("No Students Found"))
                 : ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: students.length,
-              itemBuilder: (context, index) {
-                var student = students[index];
-                return Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: students.length,
+                    itemBuilder: (context, index) {
+                      var student = students[index];
+                      return Card(
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.blue,
+                            child: Icon(Icons.person, color: Colors.white),
+                          ),
+                          title: Text(
+                              '${student['firstName']} ${student['lastName']}'),
+                        ),
+                      );
+                    },
                   ),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.blue,
-                      child: Icon(Icons.person, color: Colors.white),
-                    ),
-                    title: Text(
-                        '${student['firstName']} ${student['lastName']}'),
-                  ),
-                );
-              },
-            ),
           ],
         ),
       ),
